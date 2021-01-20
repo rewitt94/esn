@@ -32,6 +32,26 @@ export default class NotificationFactory {
         return notification;
     }
 
+    static makeAcceptCommunityInviteNotification = (invitee: string, senderId: string, communityId: string): Notification => {
+        const notification = new Notification();
+        notification.id = uuid();
+        notification.notificationType = NotificationType.COMMUNITY_INVITE_ACCEPTED;
+        notification.senderId = invitee;
+        notification.receiverId = senderId;
+        notification.subjectId = communityId;
+        return notification;
+    }
+
+    static makeCommunityUpdateNotifications = (member: string, senderId: string, communityId: string): Notification => {
+        const notification = new Notification();
+        notification.id = uuid();
+        notification.notificationType = NotificationType.COMMUNITY_EDITTED;
+        notification.senderId = senderId;
+        notification.receiverId = member;
+        notification.subjectId = communityId;
+        return notification;
+    }
+
     static makeCommunityEventCreatedNotification = (userId: string, communityId: string, eventId: string): Notification => {
         const notification = new Notification();
         notification.id = uuid();

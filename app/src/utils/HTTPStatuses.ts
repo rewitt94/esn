@@ -8,9 +8,9 @@ export const BadRequestStatus: HTTPStatus = {
     publicErrorMessage: "Invalid request"
 }
 
-export const UnauthorisedStatus: HTTPStatus = {
+export const UnauthorizedStatus: HTTPStatus = {
     statusCode: 401,
-    publicErrorMessage: "Unauthorised"
+    publicErrorMessage: "Unauthorized"
 }
 
 export const ForbiddenStatus: HTTPStatus = {

@@ -10,3 +10,11 @@ docker-compose up (make sure the container has been deleting if you changing the
 2. terminal window 2 -
 
 npm run start
+
+### Known issues
+
+1. Can create an account & progress without adding personal details 
+    - maybe this is not an issue they can just be a username ?
+
+2. hashedPassword is returned along with user data for many endpoints
+    - BIG PROBLEM

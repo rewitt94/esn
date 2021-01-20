@@ -29,24 +29,18 @@ export default class User {
     @IsOptional()
     @IsString()
     @MaxLength(50)
-    @Column()
+    @Column({ nullable: true })
     firstName: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(50)
-    @Column()
+    @Column({ nullable: true })
     lastName: string;
 
     @IsOptional()
     @IsISO8601()
-    @Column()
+    @Column({ nullable: true })
     dateOfBirth: string;
-
-    @IsOptional()
-    @IsString()
-    @MaxLength(400)
-    @Column()
-    bio: string;
 
 }

@@ -1,7 +1,7 @@
 import * as express from 'express';
 import BaseController from '../utils/BaseController';
-import { initialiseRoute, errorHandleHTTPHandler, validateAccessToken, HTTPHandler } from "../utils/middleware"
 import { HTTPMethods } from '../enums/HTTPMethods';
+import { initialiseRoute, errorHandleHTTPHandler, validateAccessToken, HTTPHandler } from "../utils/middleware"
 import NotificationService from '../services/NotificationService';
 import AuthService from '../services/AuthService';
 

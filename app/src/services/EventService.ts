@@ -33,6 +33,26 @@ class EventService {
         return event;
     };
 
+    getAttendance = async (userId: string, eventId: string): Promise<Attendance> => {
+        const attendance = await this.attendanceRepository.findOne({ where: { user: userId, event: eventId } });
+        if (attendance === undefined) {
+            throw new HTTPError(ForbiddenStatus);
+        }
+        return attendance;
+    }
+
+    getAttendances = async (eventId: string): Promise<Attendance[]> => {
+        return await this.attendanceRepository.find({ where: { event: eventId } });
+    }
+
+    createAttendance = async (attendance: Attendance): Promise<void> => {
+        const existingAttendance = await this.attendanceRepository.findOne({ where: { user: attendance.user, event: attendance.event } });
+        if (!!existingAttendance) {
+            throw new HTTPError(ConflictStatus);
+        }
+        await this.attendanceRepository.save(attendance);
+    }
+
     updateAttendance = async (userId: string, eventId: string, attendanceType: AttendanceType) => {
         const attendance = await this.attendanceRepository.findOne({ where: { user: userId, event: eventId } });
         if (attendance === undefined) {

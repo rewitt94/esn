@@ -1,45 +1,85 @@
 import fetch from 'node-fetch';
-import { AccessTokenResponse } from "../../types/AccessTokenResponse";
 import { ErrorResponse } from "../../types/ErrorResponse";
 
-interface editUserReturnType {
+interface EditUserReturnType {
     statusCode: number,
-    responseBody: AccessTokenResponse | ErrorResponse
+    responseBody: UserEditResponse | ErrorResponse
+}
+
+interface UserEditResponse {
+    id: string,
+    firstName: string,
+    lastName: string,
+    dateOfBirth: string,
 }
 
 interface UserEdit {
-    
+    firstName: string,
+    lastName: string,
+    dateOfBirth: string,
 }
 
-export const editUser = async (userEdit: UserEdit, headers: object): Promise<editUserReturnType> => {
+export const editUser = async (userEdit: UserEdit, headers: object): Promise<EditUserReturnType> => {
 
-    const response = await fetch(process.env.BASE_URL + "/users/login", {
-        method: "POST",
-        headers: Object.assign(headers, {
+    const response = await fetch(process.env.BASE_URL + "/users/", {
+        method: "PUT",
+        headers: Object.assign({
             "Content-Type": "application/json"
-        }),
+        }, headers),
         body: JSON.stringify(userEdit)
     }).catch((err) => { throw err });
     return {
         statusCode: response.status,
-        // @ts-ignore
-        reponseBody: await response.json().catch((err) => { throw err })
+        responseBody: await response.json().catch((err) => { throw err })
     }
     
 };
 
 export const editUserAndAssertSuccess = async (userEdit: UserEdit, headers: object): Promise<any> => {
 
-    // @ts-ignore
-    const outcome: editUserReturnType = await login(
+    const outcome: EditUserReturnType = await editUser(
         userEdit,
         headers
     );
-        console.log(outcome)
 
     expect(outcome.statusCode).toEqual(200);
-    // @ts-ignore
-    expect(outcome.reponseBody.username).toEqual(username);
+
+    const responseBody = outcome.responseBody as UserEditResponse;
+    expect(responseBody.firstName).toEqual(userEdit.firstName);
+    expect(responseBody.lastName).toEqual(userEdit.lastName);
+    expect(responseBody.dateOfBirth).toEqual(userEdit.dateOfBirth);
+
+    return outcome;
+
+};
+
+export const editUserAndAssertUnauthorized = async (userEdit: UserEdit, headers: object): Promise<any> => {
+
+    const outcome: EditUserReturnType = await editUser(
+        userEdit,
+        headers
+    );
+
+    expect(outcome.statusCode).toEqual(401);
+
+    const responseBody = outcome.responseBody as ErrorResponse;
+    expect(responseBody.error).toEqual("Unauthorized");
+
+    return outcome;
+
+};
+
+export const editUserAndAssertValidationError = async (userEdit: UserEdit, headers: object): Promise<any> => {
+
+    const outcome: EditUserReturnType = await editUser(
+        userEdit,
+        headers
+    );
+
+    expect(outcome.statusCode).toEqual(400);
+
+    const responseBody = outcome.responseBody as ErrorResponse;
+    expect(responseBody.error).toEqual("Invalid request");
 
     return outcome;
 

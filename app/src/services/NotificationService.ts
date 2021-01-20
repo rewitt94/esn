@@ -91,9 +91,22 @@ class NotificationService {
         await Promise.all(savePromises).catch( err => { throw err });
     }
 
-    sendAcceptCommunityNotification = async (userId: string, community: string): Promise<void> => {
-        const communityAdminIds = await this.communitityService.communityAdminIds(community);
-        
+    sendAcceptCommunityNotification = async (userId: string, communityId: string): Promise<void> => {
+        const communityAdminIds = await this.communitityService.getCommunityAdminIds(communityId);
+        const savePromises = communityAdminIds.map(async adminId => {
+            const notification = NotificationFactory.makeAcceptCommunityInviteNotification(userId, adminId, communityId);
+            return this.saveNotification(notification);
+        });
+        await Promise.all(savePromises).catch( err => { throw err });
+    }
+
+    sendCommunityUpdateNotifications = async (userId: string, communityId: string): Promise<void> => {
+        const communityMemberIds = await this.communitityService.getCommunityMemberIds(communityId);
+        const savePromises = communityMemberIds.map(async memberId => {
+            const notification = NotificationFactory.makeCommunityUpdateNotifications(userId, memberId, communityId);
+            return this.saveNotification(notification);
+        });
+        await Promise.all(savePromises).catch( err => { throw err });
     }
 
 }

@@ -1,14 +1,23 @@
 import fetch from 'node-fetch';
-import { AccessTokenResponse } from "../../types/AccessTokenResponse";
 import { ErrorResponse } from "../../types/ErrorResponse";
 import jwt from "jsonwebtoken";
 
-interface loginReturnType {
+interface LoginReturnType {
     statusCode: number,
     responseBody: AccessTokenResponse | ErrorResponse
 }
 
-export const login = async (username: string, password: string): Promise<loginReturnType> => {
+interface JwtPayload {
+    iat: string,
+    exp: string,
+
+}
+
+export interface AccessTokenResponse {
+    accessToken: string,
+}
+
+export const login = async (username: string, password: string): Promise<LoginReturnType> => {
 
     const response = await fetch(process.env.BASE_URL + "/users/login", {
         method: "POST",
@@ -22,49 +31,41 @@ export const login = async (username: string, password: string): Promise<loginRe
     }).catch((err) => { throw err });
     return {
         statusCode: response.status,
-        // @ts-ignore
-        reponseBody: await response.json().catch((err) => { throw err })
+        responseBody: await response.json().catch((err) => { throw err })
     }
     
 };
 
 export const loginAndAssertSuccess = async (username: string, password: string): Promise<any> => {
 
-    // @ts-ignore
-    const outcome: loginReturnType = await login(
+    const outcome: LoginReturnType = await login(
         username,
         password
     );
 
     expect(outcome.statusCode).toEqual(200);
-    // @ts-ignore
-    expect(outcome.reponseBody.accessToken).toMatch(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/);
 
-    // @ts-ignore
-    const decoded = jwt.decode(outcome.reponseBody.accessToken);
+    const responseBody = outcome.responseBody as AccessTokenResponse;
+    expect(responseBody.accessToken).toMatch(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/);
 
-    // @ts-ignore
+    const decoded = jwt.decode(responseBody.accessToken) as JwtPayload;
+
     expect(decoded.iat).toBeLessThan(new Date().getTime() / 1000);
-    // @ts-ignore
     expect(decoded.exp).toBeGreaterThan(new Date().getTime() / 1000);
-    // @ts-ignore
     expect(decoded.exp).toBeLessThanOrEqual(Math.ceil(new Date().getTime() / 1000 + 24 * 60 * 60));
 
     return outcome;
 
 };
 
-export const loginAndAssertUnauthorised = async (username: string, password: string): Promise<any> => {
+export const loginAndAssertUnauthorized = async (username: string, password: string): Promise<any> => {
 
-    // @ts-ignore
-    const outcome: loginReturnType = await login(
+    const outcome: LoginReturnType = await login(
         username,
         password
     );
 
     expect(outcome.statusCode).toEqual(401);
-    // @ts-ignore
-    expect(outcome.reponseBody.error).toEqual("Unauthorised");
 
     return outcome;
 
@@ -72,15 +73,15 @@ export const loginAndAssertUnauthorised = async (username: string, password: str
 
 export const loginAndAssertValidationError = async (username: string, password: string): Promise<any> => {
 
-    // @ts-ignore
-    const outcome: loginReturnType = await login(
+    const outcome: LoginReturnType = await login(
         username,
         password
     );
 
     expect(outcome.statusCode).toEqual(400);
-    // @ts-ignore
-    expect(outcome.reponseBody.error).toEqual("Invalid request");
+
+    const responseBody = outcome.responseBody as ErrorResponse;
+    expect(responseBody.error).toEqual("Invalid request");
 
     return outcome;
 

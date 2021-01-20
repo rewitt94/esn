@@ -1,11 +1,11 @@
 import typeorm, { getRepository } from "typeorm";
-import Community from '../entities/Community';
-import Membership from '../entities/Membership';
 import { ConflictStatus, ForbiddenStatus } from "../utils/HTTPStatuses";
 import { HTTPError } from "../utils/HTTPError";
 import { MembershipType } from "../enums/MembershipType";
 import MappingEntityFactory from "../factories/MappingEntityFactory";
 import ValidationHelper from "../utils/ValidationHelper";
+import Community from '../entities/Community';
+import Membership from '../entities/Membership';
 
 class CommuntiyService {
 
@@ -31,7 +31,11 @@ class CommuntiyService {
             throw new HTTPError(ForbiddenStatus);
         }
         return community;
-     }
+    }
+
+    getCommunitiesForUser = async (userdId: string): Promise<Community[]> => {
+        return await this.communityRepository.find({ where: { user: userdId } });
+    }
 
     saveMemberships = async (memberships: Membership[]): Promise<void> => {
         const validationPromises = memberships.map(async membership => {
@@ -45,6 +49,10 @@ class CommuntiyService {
             await this.membershipRepository.save(membership);
         })
         await Promise.all(savePromises).catch( err => { throw err });
+    }
+
+    updateCommunity = async (community: Community): Promise<void> => {
+        await this.communityRepository.update(community.id, community);
     }
 
     saveCommunity = async (community: Community): Promise<void> => {
@@ -63,9 +71,19 @@ class CommuntiyService {
         return membership;
     }
 
+    getCommunityMemberships = async (communityId: string): Promise<Membership[]> => {
+        return await this.membershipRepository.find({ where: { community: communityId } });
+    }
+
     getCommunityMemberIds = async (communityId: string): Promise<string[]> => {
         const memberships = await this.membershipRepository.find({ where: { community: communityId } });
         memberships.filter(membership => membership.membershipType === MembershipType.ADMIN || membership.membershipType === MembershipType.MEMBER);
+        return memberships.map(membership => membership.user);
+    }
+
+    getCommunityAdminIds = async (communityId: string): Promise<string[]> => {
+        const memberships = await this.membershipRepository.find({ where: { community: communityId } });
+        memberships.filter(membership => membership.membershipType === MembershipType.ADMIN);
         return memberships.map(membership => membership.user);
     }
 

@@ -1,13 +1,13 @@
 import * as express from 'express';
-import User from "../entities/User";
 import jwt from "jsonwebtoken";
 import EnvVars from "../utils/EnvVars";
+import { MembershipType } from '../enums/MembershipType';
 import { HTTPError } from "../utils/HTTPError";
-import { BadRequestStatus, ForbiddenStatus, UnauthorisedStatus } from "../utils/HTTPStatuses";
+import { BadRequestStatus, ForbiddenStatus, UnauthorizedStatus } from "../utils/HTTPStatuses";
 import UserService from './UserService';
 import CommuntiyService from './CommunityService';
 import EventService from './EventService';
-import { MembershipType } from '../enums/MembershipType';
+import User from "../entities/User";
 
 const EXPIRY_HOURS = 24;
 
@@ -35,29 +35,29 @@ class AuthService {
     };
 
     validateAccessToken = (request: express.Request): void => {
-        const authHeader = request.header('Authorisation');
+        const authHeader = request.header('Authorization');
         if (authHeader === undefined) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
         const accessToken = authHeader.split("Bearer ")[1];
         if (accessToken === undefined) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
         try {
             jwt.verify(accessToken, EnvVars.get().valueOf("JWT_SECRET"));
         } catch (err) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
     }
 
     getUserId = (request: express.Request): string => {
-        const authHeader = request.header('Authorisation');
+        const authHeader = request.header('Authorization');
         if (authHeader === undefined) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
         const accessToken = authHeader.split("Bearer ")[1];
         if (accessToken === undefined) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
         const decoded = jwt.decode(accessToken);
         // @ts-ignore
@@ -65,7 +65,7 @@ class AuthService {
             // @ts-ignore
             return decoded.user;
         }
-        throw new HTTPError(UnauthorisedStatus);
+        throw new HTTPError(UnauthorizedStatus);
     };
 
 
@@ -88,6 +88,8 @@ class AuthService {
     }
 
     validateUserIsVisible = async (requestingUser: string, targetUser: string): Promise<void> => {
+        console.log(requestingUser)
+        console.log(targetUser)
         if (requestingUser === targetUser) {
             return;
         }
@@ -97,6 +99,7 @@ class AuthService {
         if (await this.userService.friendInviteExists(requestingUser, targetUser)) {
             return;
         }
+        console.log("here")
         throw new HTTPError(ForbiddenStatus);
     }
 
@@ -118,6 +121,10 @@ class AuthService {
 
     validateCommunityIsVisible = async (userdId: string, communityId: string): Promise<void> => {
         await this.communitityService.getMembership(userdId, communityId);
+    }
+
+    validateEventIsVisible = async (userdId: string, eventId: string): Promise<void> => {
+        await this.eventService.getAttendance(userdId, eventId);
     }
 
     validateMembership = async (userdId: string, communityId: string): Promise<void> => {

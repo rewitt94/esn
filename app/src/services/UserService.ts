@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import User from '../entities/User';
 import Friendship from '../entities/Friendship';
 import LoginRequest from "../requestbody/LoginRequest";
-import { BadRequestStatus, ConflictStatus, ForbiddenStatus, UnauthorisedStatus } from "../utils/HTTPStatuses";
+import { BadRequestStatus, ConflictStatus, ForbiddenStatus, UnauthorizedStatus } from "../utils/HTTPStatuses";
 import { HTTPError } from "../utils/HTTPError";
 import MappingEntityFactory from "../factories/MappingEntityFactory";
 import { FriendshipType } from "../enums/FriendshipType";
@@ -38,11 +38,11 @@ class UserService {
     login = async (login: LoginRequest): Promise<User> => {
         const user = await this.userRepository.findOne({ where: { username: login.username } });
         if (!user) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
         const success = bcrypt.compareSync(login.password, user.hashedPassword!);
         if (!success) {
-            throw new HTTPError(UnauthorisedStatus);
+            throw new HTTPError(UnauthorizedStatus);
         }
         return user;
     };
@@ -119,6 +119,16 @@ class UserService {
                 return await this.userRepository.findOne(friendship.userTwo);
             }
             return await this.userRepository.findOne(friendship.userOne);
+        });
+        const friends = await Promise.all(promises).catch(err => { throw err })
+        return friends.filter(this.notEmpty);
+    };
+
+    getFriendRequests =  async (userId: string): Promise<User[]> => {
+        const friendRequests = await this.friendRepository.find({ where: { userTwo: userId } });
+        friendRequests.filter(friendship => friendship.friendshipType === FriendshipType.REQUESTED);
+        const promises = friendRequests.map(async friendRequest => {
+            return await this.userRepository.findOne(friendRequest.userOne);
         });
         const friends = await Promise.all(promises).catch(err => { throw err })
         return friends.filter(this.notEmpty);
