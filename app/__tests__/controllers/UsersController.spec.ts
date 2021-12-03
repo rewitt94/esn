@@ -103,13 +103,13 @@ describe("UsersController", () => {
             const mockedResponse = mock<express.Response>();
 
             const ACCESS_TOKEN = "ACCESS_TOKEN";
-            mockedAuthService.createAccessToken.mockReturnValueOnce(ACCESS_TOKEN);
+            mockedAuthService.createInitialAccessToken.mockReturnValueOnce(ACCESS_TOKEN);
 
             // @ts-ignore
             await usersController.login({ body: { username: "tester1000", password: "mypassword" } }, mockedResponse);
 
             expect(mockedUserService.login).toHaveBeenCalled();
-            expect(mockedAuthService.createAccessToken).toHaveBeenCalled();
+            expect(mockedAuthService.createInitialAccessToken).toHaveBeenCalled();
             expect(mockedResponse.status).toHaveBeenCalledWith(200);
             expect(mockedResponse.json).toHaveBeenCalledWith(expect.objectContaining({
                 accessToken: ACCESS_TOKEN

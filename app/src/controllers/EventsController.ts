@@ -4,7 +4,7 @@ import ValidationHelper from "../utils/ValidationHelper";
 import { HTTPMethods } from '../enums/HTTPMethods';
 import { HTTPError } from '../utils/HTTPError';
 import { ForbiddenStatus } from '../utils/HTTPStatuses';
-import { initialiseRoute, errorHandleHTTPHandler, validateAccessToken, HTTPHandler } from "../utils/middleware"
+import { initialiseRoute, validateFullAccessToken, HTTPHandler } from "../utils/middleware"
 import UserService from '../services/UserService';
 import AuthService from '../services/AuthService';
 import EventService from '../services/EventService';
@@ -34,15 +34,15 @@ class EventsController implements BaseController {
   }
 
   public intializeRoutes = () => {
-    initialiseRoute(this.router, HTTPMethods.GET, "/", [errorHandleHTTPHandler, validateAccessToken], this.getEvents);
-    initialiseRoute(this.router, HTTPMethods.GET, "/:eventId", [errorHandleHTTPHandler, validateAccessToken], this.getEvent);
-    initialiseRoute(this.router, HTTPMethods.GET, "/:eventId/attendance", [errorHandleHTTPHandler, validateAccessToken], this.getEventAttendance);
-    initialiseRoute(this.router, HTTPMethods.POST, "/invite-event", [errorHandleHTTPHandler, validateAccessToken], this.createInviteEvent);
-    initialiseRoute(this.router, HTTPMethods.POST, "/community-event", [errorHandleHTTPHandler, validateAccessToken], this.createCommunityEvent);
-    initialiseRoute(this.router, HTTPMethods.POST, "/invite", [errorHandleHTTPHandler, validateAccessToken], this.createInvitesToEvent);
-    initialiseRoute(this.router, HTTPMethods.POST, "/attendance", [errorHandleHTTPHandler, validateAccessToken], this.createCommunityEventAttendance);
-    initialiseRoute(this.router, HTTPMethods.PUT, "/", [errorHandleHTTPHandler, validateAccessToken], this.editEvent);
-    initialiseRoute(this.router, HTTPMethods.PUT, "/attendance", [errorHandleHTTPHandler, validateAccessToken], this.editAttendance);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getEvents);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:eventId", [validateFullAccessToken], this.getEvent);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:eventId/attendance", [validateFullAccessToken], this.getEventAttendance);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/invite-event", [validateFullAccessToken], this.createInviteEvent);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/community-event", [validateFullAccessToken], this.createCommunityEvent);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/invite", [validateFullAccessToken], this.createInvitesToEvent);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/attendance", [validateFullAccessToken], this.createCommunityEventAttendance);
+    initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/", [validateFullAccessToken], this.editEvent);
+    initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/attendance", [validateFullAccessToken], this.editAttendance);
   }
 
   getEvents: HTTPHandler = async (request: express.Request, response: express.Response) => {
@@ -79,7 +79,7 @@ class EventsController implements BaseController {
         userId: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        attendance: attendance.attendanceType,
+        attendance: attendance.AttendanceStatus,
         attendanceUpdated: attendance.lastUpdated
       };
     })
@@ -150,24 +150,24 @@ class EventsController implements BaseController {
     await ValidationHelper.validateEntity(attendance);
     const event = await this.eventService.getEvent(createCommunityEventAttendanceRequest.event);
     if (event.community === undefined) {
-      throw new HTTPError(ForbiddenStatus)
+      throw new HTTPError(ForbiddenStatus, 'createCommunityEventAttendance - cannot create community attendance if event has no community', { event })
     }
     await this.authService.validateMembership(userId, event.community);
     await this.eventService.createAttendance(attendance);
     await this.notificationService.sendEventAttendanceNotification(userId, event.creator, event.id);
     response.status(201);
-    response.json({ attendance: createCommunityEventAttendanceRequest.attendanceType });
+    response.json({ attendance: createCommunityEventAttendanceRequest.AttendanceStatus });
   }
 
   editAttendance: HTTPHandler = async (request: express.Request, response: express.Response) => {
     const updateAttendanceRequest = new UpdateAttendanceRequest(request.body);
     await ValidationHelper.validateRequestBody(updateAttendanceRequest);
     const userId = this.authService.getUserId(request);
-    await this.eventService.updateAttendance(userId, updateAttendanceRequest.event, updateAttendanceRequest.attendanceType);
+    await this.eventService.updateAttendance(userId, updateAttendanceRequest.event, updateAttendanceRequest.AttendanceStatus);
     const event = await this.eventService.getEvent(updateAttendanceRequest.event);
     await this.notificationService.sendEventAttendanceNotification(userId, event.creator, event.id);
     response.status(200);
-    response.json({ attendance: updateAttendanceRequest.attendanceType });
+    response.json({ attendance: updateAttendanceRequest.AttendanceStatus });
   }
 
 }

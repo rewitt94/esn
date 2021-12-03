@@ -1,34 +1,28 @@
 import { uuid } from "uuidv4";
 import dotenv from "dotenv";
-import { createUserAndAssertSuccess } from "../../../src/endpoints/users/CreateUser";
-import { loginAndAssertSuccess, loginAndAssertUnauthorized, loginAndAssertValidationError } from "../../../src/endpoints/users/Login";
+import { Login } from "../../../src/endpoints/users/Login";
+import { AccessTokenStatus } from "../../../src/enums/AccessTokenStatus";
+import { TestDataSetup } from "../../../src/utils/TestDataSetup";
 
 describe("Login", () => {
+
+    const login = new Login();
 
     beforeAll(() => {
         dotenv.config();
     });
 
-        
-    const setupLoginTest = async () => {
+    it("Login returns initial access token if user details are not populated", async () => {
 
-        const username = uuid()
-        const password = "mysecretpassword123";
+        const testData = await TestDataSetup.createUser();
+        (await login.makeRequest(testData, {})).assertSuccess(AccessTokenStatus.INTIAL);
 
-        await createUserAndAssertSuccess(username, password);
+    });
 
-        return {
-            username,
-            password
-        }
+    it("Login returns full access token if user details are populated", async () => {
 
-    }
-
-    it("Login returns access token", async () => {
-
-        const crendentials = await setupLoginTest()
-
-        await loginAndAssertSuccess(crendentials.username, crendentials.password);
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        (await login.makeRequest({ username: testData.username, password: testData.password }, {})).assertSuccess(AccessTokenStatus.FULL);
 
     });
 
@@ -36,24 +30,24 @@ describe("Login", () => {
 
         const username = uuid()
         const password = "mysecretpassword123";
-
-        await loginAndAssertUnauthorized(username, password);
+        const payload = { username, password };
+        (await login.makeRequest(payload, {})).assertUnauthorizedError();
 
     });
 
     it("Login returns unauthorized if password is wrong", async () => {
 
-        const crendentials = await setupLoginTest()
-
-        await loginAndAssertUnauthorized(crendentials.username, "mysecretpassword456");
+        const testData = await TestDataSetup.createUser();
+        const payload = { username: testData.username, password: uuid() };
+        (await login.makeRequest(payload, {})).assertUnauthorizedError();
 
     });
 
     it("Login returns unauthorized if username is wrong", async () => {
 
-        const crendentials = await setupLoginTest()
-
-        await loginAndAssertUnauthorized(uuid(), crendentials.password);
+        const testData = await TestDataSetup.createUser();
+        const payload = { username: uuid(), password: testData.password };
+        (await login.makeRequest(payload, {})).assertUnauthorizedError();
 
     });
 
@@ -78,9 +72,9 @@ describe("Login", () => {
             }
         ]
 
-        for (const attempt of invalidAttemps) {
+        for (const payload of invalidAttemps) {
             // @ts-ignore
-            await loginAndAssertValidationError(attempt.username, attempt.password);
+            (await login.makeRequest(payload, {})).assertValidationError();
         }
 
     });

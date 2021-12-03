@@ -4,24 +4,18 @@ import jwt from "jsonwebtoken";
 import { JWTClaims } from '../../types/JWTClaims';
 import { AccessTokenStatus } from '../../enums/AccessTokenStatus';
 
-interface LoginPayload {
-    username: string,
-    password: string,
-}
-
-interface LoginResponse {
+interface TokenResponse {
     accessToken: string,
 }
 
-export class Login extends HTTPEndpoint<LoginPayload, LoginResponse, AccessTokenStatus> {
+export class Token extends HTTPEndpoint<undefined, TokenResponse> {
 
-    httpRequest = async (payload: LoginPayload):  Promise<HTTPApiMethodResponse<LoginResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/users/login", {
-            method: "POST",
-            headers: {
+    httpRequest = async (_: undefined, headers: object):  Promise<HTTPApiMethodResponse<TokenResponse>> => {
+        const response = await fetch(process.env.BASE_URL + "/users/token", {
+            method: "GET",
+            headers: Object.assign({
                 "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
+            }, headers)
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
@@ -29,16 +23,12 @@ export class Login extends HTTPEndpoint<LoginPayload, LoginResponse, AccessToken
         }
     }
 
-    assertSuccess = (statusCode: number, responseBody: LoginResponse, requestBody: LoginPayload, expectedStatus?: AccessTokenStatus): void => {
+    assertSuccess = (statusCode: number, responseBody: TokenResponse): void => {
         expect(statusCode).toEqual(200);
         expect(responseBody.accessToken).toMatch(/^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*$/);
     
         const decoded = jwt.decode(responseBody.accessToken) as JWTClaims;
-
-        if (!!expectedStatus) {
-            expect(decoded.status).toEqual(expectedStatus);
-        }
-        expect(decoded.username).toEqual(requestBody.username);
+        expect(decoded.status).toEqual(AccessTokenStatus.FULL);
         expect(decoded.iat).toBeLessThan(new Date().getTime() / 1000);
         expect(decoded.exp).toBeGreaterThan(new Date().getTime() / 1000);
         expect(decoded.exp).toBeLessThanOrEqual(Math.ceil(new Date().getTime() / 1000 + 24 * 60 * 60));

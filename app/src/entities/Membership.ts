@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsUUID, IsEnum } from "class-validator";
-import { MembershipType } from "../enums/MembershipType";
+import { MembershipStatus } from "../enums/MembershipStatus";
 import { Entity, PrimaryColumn, Column } from "typeorm";
 
 @Entity()
@@ -11,9 +11,9 @@ export default class Membership {
     id: string;
 
     @IsNotEmpty()
-    @IsEnum(MembershipType)
+    @IsEnum(MembershipStatus)
     @Column()
-    membershipType: MembershipType;
+    MembershipStatus: MembershipStatus;
 
     @IsNotEmpty()
     @IsUUID("4")

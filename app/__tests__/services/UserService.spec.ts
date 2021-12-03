@@ -1,74 +1,74 @@
-import typeorm from "typeorm";
-import User from "../../src/entities/User";
-import UserService from "../../src/services/UserService";
-import { mock } from "jest-mock-extended";
-import { USER } from "../data/data";
+// import typeorm from "typeorm";
+// import User from "../../src/entities/User";
+// import UserService from "../../src/services/UserService";
+// import { mock } from "jest-mock-extended";
+// import { USER } from "../data/data";
 
-// jest.mock("typeorm");
+// // jest.mock("typeorm");
 
-// const mockedCompareSync = jest.fn();
-// jest.mock("bcrypt", () => ({
-//     compareSync: jest.fn()
-// }));
+// // const mockedCompareSync = jest.fn();
+// // jest.mock("bcrypt", () => ({
+// //     compareSync: jest.fn()
+// // }));
 
-const mockedUserRepository = mock<typeorm.Repository<User>>();
+// const mockedUserRepository = mock<typeorm.Repository<User>>();
 
-describe("UserService", () => {
+// describe("UserService", () => {
 
-    describe("createUser", () => {
+//     describe("createUser", () => {
 
-        it("user is saved to user repository", async () => {
+//         it("user is saved to user repository", async () => {
 
-            const userService = UserService.getInstance();
+//             const userService = UserService.getInstance();
 
-            // @ts-ignore
-            userService.userRepository = mockedUserRepository;
+//             // @ts-ignore
+//             userService.userRepository = mockedUserRepository;
 
-            mockedUserRepository.findOne.mockResolvedValueOnce(undefined);
+//             mockedUserRepository.findOne.mockResolvedValueOnce(undefined);
 
-            await expect(userService.saveUser(USER)).resolves.toEqual(USER);
+//             await expect(userService.saveUser(USER)).resolves.toEqual(USER);
 
-            expect(mockedUserRepository.findOne).toHaveBeenCalledWith({ username: USER.username });
-            expect(mockedUserRepository.save).toHaveBeenCalledWith(USER);
+//             expect(mockedUserRepository.findOne).toHaveBeenCalledWith({ username: USER.username });
+//             expect(mockedUserRepository.save).toHaveBeenCalledWith(USER);
 
-        });
+//         });
 
-        it("throws conflict error if user already exists", async () => {
+//         it("throws conflict error if user already exists", async () => {
 
-            const userService = UserService.getInstance();
+//             const userService = UserService.getInstance();
 
-            // @ts-ignore
-            userService.userRepository = mockedUserRepository;
+//             // @ts-ignore
+//             userService.userRepository = mockedUserRepository;
 
-            mockedUserRepository.findOne.mockResolvedValueOnce(USER);
+//             mockedUserRepository.findOne.mockResolvedValueOnce(USER);
 
-            await expect(userService.saveUser(USER)).rejects.toThrowError(expect.objectContaining({
-                message: "could not be created",
-                statusCode: 409
-            }));
+//             await expect(userService.saveUser(USER)).rejects.toThrowError(expect.objectContaining({
+//                 message: "could not be created",
+//                 statusCode: 409
+//             }));
 
-        });
+//         });
 
-    });
+//     });
 
-    // describe("login", () => {
+//     // describe("login", () => {
 
-    //     it("Calls compare sync", async () => {
+//     //     it("Calls compare sync", async () => {
 
-    //         const userService = UserService.getInstance();
-    //         const loginRequest = { username: USER.username, password: "helloworld" };
+//     //         const userService = UserService.getInstance();
+//     //         const loginRequest = { username: USER.username, password: "helloworld" };
 
-    //         // @ts-ignore
-    //         userService.userRepository = mockedUserRepository;
+//     //         // @ts-ignore
+//     //         userService.userRepository = mockedUserRepository;
 
-    //         mockedUserRepository.findOne.mockResolvedValueOnce(USER);
+//     //         mockedUserRepository.findOne.mockResolvedValueOnce(USER);
 
-    //         await expect(userService.login(loginRequest)).resolves.toEqual(USER);
+//     //         await expect(userService.login(loginRequest)).resolves.toEqual(USER);
 
-    //         expect(mockedUserRepository.findOne).toHaveBeenCalledWith(USER);
+//     //         expect(mockedUserRepository.findOne).toHaveBeenCalledWith(USER);
 
-    //     });
+//     //     });
 
-    // });
+//     // });
 
-});
+// });

@@ -2,16 +2,16 @@ import { uuid } from "uuidv4";
 import Attendance from "../entities/Attendance";
 import Membership from "../entities/Membership";
 import Friendship from "../entities/Friendship";
-import { AttendanceType } from "../enums/AttendanceType";
-import { MembershipType } from "../enums/MembershipType";
-import { FriendshipType } from "../enums/FriendshipType";
+import { AttendanceStatus } from "../enums/AttendanceStatus";
+import { MembershipStatus } from "../enums/MembershipStatus";
+import { FriendshipStatus } from "../enums/FriendshipStatus";
 
 export default class MappingEntityFactory {
 
     static makeAdminMembership(communityId: string, userId: string): Membership {
         const membership = new Membership();
         membership.id = uuid();
-        membership.membershipType = MembershipType.ADMIN;
+        membership.MembershipStatus = MembershipStatus.ADMIN;
         membership.user = userId;
         membership.community = communityId;
         return membership;
@@ -20,7 +20,7 @@ export default class MappingEntityFactory {
     static makeInvitedMembership(communityId: string, userId: string): Membership {
         const membership = new Membership();
         membership.id = uuid();
-        membership.membershipType = MembershipType.INVITED;
+        membership.MembershipStatus = MembershipStatus.INVITED;
         membership.user = userId;
         membership.community = communityId;
         return membership;
@@ -30,7 +30,7 @@ export default class MappingEntityFactory {
         const attendance = new Attendance();
         attendance.id = uuid();
         attendance.lastUpdated = new Date().toISOString();
-        attendance.attendanceType = AttendanceType.INVITED;
+        attendance.AttendanceStatus = AttendanceStatus.INVITED;
         attendance.event = eventId;
         attendance.user = invitee;
         return attendance;
@@ -39,9 +39,9 @@ export default class MappingEntityFactory {
     static makeRequestedFriendship(userOne: string, userTwo: string) {
         const friendship = new Friendship();
         friendship.id = uuid();
-        friendship.userOne = userOne;
-        friendship.userTwo = userTwo;
-        friendship.friendshipType = FriendshipType.REQUESTED;
+        friendship.userOne = userOne; // invitee
+        friendship.userTwo = userTwo; // requester
+        friendship.FriendshipStatus = FriendshipStatus.REQUESTED;
         return friendship;
     }
 

@@ -1,7 +1,7 @@
 import * as express from 'express';
 import BaseController from '../utils/BaseController';
 import { HTTPMethods } from '../enums/HTTPMethods';
-import { initialiseRoute, errorHandleHTTPHandler, validateAccessToken, HTTPHandler } from "../utils/middleware"
+import { initialiseRoute, validateFullAccessToken, HTTPHandler } from "../utils/middleware"
 import NotificationService from '../services/NotificationService';
 import AuthService from '../services/AuthService';
 
@@ -17,7 +17,7 @@ class NotificationsController implements BaseController {
   }
 
   public intializeRoutes = () => {
-    initialiseRoute(this.router, HTTPMethods.GET, "/", [errorHandleHTTPHandler, validateAccessToken], this.getNotifications);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getNotifications);
   }
 
   getNotifications: HTTPHandler = async (request: express.Request, response: express.Response) => {

@@ -1,8 +1,10 @@
 import { uuid } from "uuidv4";
 import dotenv from "dotenv";
-import { createUserAndAssertDuplicationError, createUserAndAssertSuccess, createUserAndAssertValidationError } from "../../../src/endpoints/users/CreateUser";
+import { CreateUser } from "../../../src/endpoints/users/CreateUser";
 
 describe("Create user", () => {
+
+    const createUser = new CreateUser();
 
     beforeAll(() => {
         dotenv.config();
@@ -12,8 +14,7 @@ describe("Create user", () => {
 
         const username = uuid()
         const password = "mysecretpassword123";
-
-        await createUserAndAssertSuccess(username, password);
+        (await createUser.makeRequest({ username, password }, {})).assertSuccess();
 
     });
 
@@ -21,9 +22,8 @@ describe("Create user", () => {
 
         const username = uuid()
         const password = "mysecretpassword123";
-
-        await createUserAndAssertSuccess(username, password);
-        await createUserAndAssertDuplicationError(username, password);
+        (await createUser.makeRequest({ username, password })).assertSuccess();
+        (await createUser.makeRequest({ username, password })).assertConflictError();
 
     });
 
@@ -56,9 +56,9 @@ describe("Create user", () => {
             }
         ]
 
-        for (const attempt of invalidAttemps) {
+        for (const payload of invalidAttemps) {
             // @ts-ignore
-            await createUserAndAssertValidationError(attempt.username, attempt.password);
+            (await createUser.makeRequest(payload)).assertValidationError();
         }
 
     });

@@ -9,22 +9,22 @@ export default class ValidationHelper {
     static validateRequestBody = async (requestBody: any) => {
         try {
             await validateOrReject(requestBody);
-        } catch (err) {
-            throw new HTTPError(BadRequestStatus);
+        } catch (validationError) {
+            throw new HTTPError(BadRequestStatus, 'validateRequestBody - unable to validate request body', { validationError });
         }
     }
 
     static validateEntity = async (entity: any) => {
         try {
             await validateOrReject(entity);
-        } catch (err) {
-            throw new HTTPError(UnprocessableEntityStatus);
+        } catch (validationError) {
+            throw new HTTPError(UnprocessableEntityStatus, 'validateEntity - unable to validate psql entity', { validationError });
         }
     }
 
-    static validateUuid = async (uuid: string) => {
+    static validateUuid = (uuid: string) => {
         if (uuid === undefined || ValidationHelper.UUID_REGEX.test(uuid) === false) {
-            throw new HTTPError(BadRequestStatus);
+            throw new HTTPError(BadRequestStatus, 'validateUuid - uuid is invalid', { uuid });
         }
     }
 

@@ -1,4 +1,4 @@
-export enum FriendshipType {
+export enum FriendshipStatus {
     ACCEPTED = "Accepted",
     REQUESTED = "Requested"
 }

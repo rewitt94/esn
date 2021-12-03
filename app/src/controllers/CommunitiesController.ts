@@ -2,7 +2,7 @@ import * as express from 'express';
 import BaseController from '../utils/BaseController';
 import ValidationHelper from "../utils/ValidationHelper";
 import { HTTPMethods } from '../enums/HTTPMethods';
-import { errorHandleHTTPHandler, HTTPHandler, initialiseRoute, validateAccessToken } from "../utils/middleware"
+import { HTTPHandler, initialiseRoute, validateFullAccessToken } from "../utils/middleware"
 import AuthService from '../services/AuthService';
 import CommunityService from '../services/CommunityService';
 import UserService from '../services/UserService';
@@ -27,13 +27,13 @@ class CommunitiesController implements BaseController {
   }
 
   public intializeRoutes = () => {
-    initialiseRoute(this.router, HTTPMethods.GET, "/", [errorHandleHTTPHandler, validateAccessToken], this.getCommunity);
-    initialiseRoute(this.router, HTTPMethods.GET, "/:communityId", [errorHandleHTTPHandler, validateAccessToken], this.getCommunity);
-    initialiseRoute(this.router, HTTPMethods.GET, "/:communityId/members", [errorHandleHTTPHandler, validateAccessToken], this.getCommunityMembers);
-    initialiseRoute(this.router, HTTPMethods.POST, "/", [errorHandleHTTPHandler, validateAccessToken], this.createCommunity);
-    initialiseRoute(this.router, HTTPMethods.POST, "/invite", [errorHandleHTTPHandler, validateAccessToken], this.inviteToCommunity);
-    initialiseRoute(this.router, HTTPMethods.POST, "/accept", [errorHandleHTTPHandler, validateAccessToken], this.acceptInviteToCommunity);
-    initialiseRoute(this.router, HTTPMethods.PUT, "/", [errorHandleHTTPHandler, validateAccessToken], this.editCommunity);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getCommunity);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:communityId", [validateFullAccessToken], this.getCommunity);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:communityId/members", [validateFullAccessToken], this.getCommunityMembers);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/", [validateFullAccessToken], this.createCommunity);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/invite", [validateFullAccessToken], this.inviteToCommunity);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/accept", [validateFullAccessToken], this.acceptInviteToCommunity);
+    initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/", [validateFullAccessToken], this.editCommunity);
   }
 
   getCommunities: HTTPHandler = async (request: express.Request, response: express.Response) => {
@@ -65,7 +65,7 @@ class CommunitiesController implements BaseController {
         userId: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        membership: membership.membershipType,
+        membership: membership.MembershipStatus,
       };
     })
     const members = await Promise.all(promises);

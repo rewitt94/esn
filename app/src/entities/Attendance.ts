@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsUUID, IsISO8601, IsEnum } from "class-validator";
-import { AttendanceType } from "../enums/AttendanceType";
+import { AttendanceStatus } from "../enums/AttendanceStatus";
 import { Entity, PrimaryColumn, Column } from "typeorm";
 
 @Entity()
@@ -16,9 +16,9 @@ export default class Attendance {
     lastUpdated: string;
 
     @IsNotEmpty()
-    @IsEnum(AttendanceType)
+    @IsEnum(AttendanceStatus)
     @Column()
-    attendanceType: AttendanceType;
+    AttendanceStatus: AttendanceStatus;
 
     @IsNotEmpty()
     @IsUUID("4")

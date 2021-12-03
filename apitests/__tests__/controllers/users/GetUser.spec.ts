@@ -1,155 +1,129 @@
 import { uuid } from "uuidv4";
 import dotenv from "dotenv";
 import faker from "faker";
-import { createUserAndAssertSuccess } from "../../../src/endpoints/users/CreateUser";
-import { loginAndAssertSuccess } from "../../../src/endpoints/users/Login";
-import { editUserAndAssertSuccess } from "../../../src/endpoints/users/EditUser";
-import { getUserAndAssertSuccess, getUserAndAssertUnauthorized, getUserAndAssertValidationError } from "../../../src/endpoints/users/GetUser";
+import { GetUser } from "../../../src/endpoints/users/GetUser";
+import { TestDataSetup } from "../../../src/utils/TestDataSetup";
 
 describe("Get User", () => {
 
     beforeAll(() => {
         dotenv.config();
     });    
-    
-    const setupGetUserTest = async () => {
 
-        const username = uuid()
-        const password = "mysecretpassword123";
-        const firstName = faker.name.firstName();
-        const lastName = faker.name.lastName();
-        const dateOfBirth = faker.date.past(25).toISOString();
-
-        const createOutcome = await createUserAndAssertSuccess(username, password);
-        const id = createOutcome.responseBody.id;
-        const loginOutcome = await loginAndAssertSuccess(username, password);
-        const accessToken = loginOutcome.responseBody.accessToken;
-
-        await editUserAndAssertSuccess({
-            firstName,
-            lastName,
-            dateOfBirth
-        }, {
-            "Authorization": "Bearer " + accessToken
-        });
-
-        return {
-            id,
-            username,
-            password,
-            firstName,
-            lastName,
-            dateOfBirth,
-            accessToken
-        };
-
-    };
-
-    it('Validation error if user id is not uuid', async () => {
-
-        const userInfo = await setupGetUserTest();
-
-        await getUserAndAssertValidationError(
-            faker.name.findName(),
-            { "Authorization": "Bearer " + userInfo.accessToken }
-        );
-
-    });
-
-    it('Cannot get user if unauthenticated', async () => {
-
-        const userInfo = await setupGetUserTest();
-
-        await getUserAndAssertUnauthorized(
-            userInfo.id,
-            { "Authorization": "Bearer "}
-        );
-
-        await getUserAndAssertUnauthorized(
-            userInfo.id,
-            { "Authorization": "Bearer abc" }
-        );
-
-        // @ts-ignore
-        await getUserAndAssertUnauthorized(
-            userInfo.id
-        );
-
-    });
+    const getUser = new GetUser();
 
     it('Can get user if authenticated & is self', async () => {
 
-        const userInfo = await setupGetUserTest();
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        (await getUser.makeRequest(testData.id, {
+            "Authorization": "Bearer " + testData.fullAccessToken
+        })).assertSuccess({
+            id: testData.id,
+            username: testData.username,
+            firstName: testData.firstName,
+            lastName: testData.lastName,
+            dateOfBirth: testData.dateOfBirth,
+        });
+    
+    });
 
-        await getUserAndAssertSuccess({
-            id: userInfo.id,
-            username: userInfo.username,
-            firstName: userInfo.firstName,
-            lastName: userInfo.lastName,
-            dateOfBirth: userInfo.dateOfBirth,
-        }, {
-            "Authorization": "Bearer " + userInfo.accessToken
-        })
+    it('Cannot get user with initial access token', async () => {
 
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        (await getUser.makeRequest(testData.id, {
+            "Authorization": "Bearer " + testData.initialAccessToken
+        })).assertForbbidenError();
+    
     });
 
     it('Can get user if authenticated & is friend', async () => {
 
-        // const userInfo = await setupGetUserTest();
+        const testData = await TestDataSetup.createUsersWhoAreFriends();
 
-        // await getUserAndAssertSuccess({
-        //     id: userInfo.id,
-        //     username: userInfo.username,
-        //     firstName: userInfo.firstName,
-        //     lastName: userInfo.lastName,
-        //     dateOfBirth: userInfo.dateOfBirth,
-        // }, {
-        //     "Authorization": "Bearer " + userInfo.accessToken
-        // });
+        (await getUser.makeRequest(testData.otherUser.id, {
+            "Authorization": "Bearer " + testData.user.fullAccessToken
+        })).assertSuccess({
+            id: testData.otherUser.id,
+            username: testData.otherUser.username,
+            firstName: testData.otherUser.firstName,
+            lastName: testData.otherUser.lastName,
+            dateOfBirth: testData.otherUser.dateOfBirth,
+        });
+
+        (await getUser.makeRequest(testData.user.id, {
+            "Authorization": "Bearer " + testData.otherUser.fullAccessToken
+        })).assertSuccess({
+            id: testData.user.id,
+            username: testData.user.username,
+            firstName: testData.user.firstName,
+            lastName: testData.user.lastName,
+            dateOfBirth: testData.user.dateOfBirth,
+        });
+
 
     });
 
     it('Can get user if authenticated & has friend request from user', async () => {
 
-        // const userInfo = await setupGetUserTest();
+        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        (await getUser.makeRequest(testData.otherUser.id, {
+            "Authorization": "Bearer " + testData.user.fullAccessToken
+        })).assertSuccess({
+            id: testData.otherUser.id,
+            username: testData.otherUser.username,
+            firstName: testData.otherUser.firstName,
+            lastName: testData.otherUser.lastName,
+            dateOfBirth: testData.otherUser.dateOfBirth,
+        });
 
-        // await getUserAndAssertSuccess({
-        //     id: userInfo.id,
-        //     username: userInfo.username,
-        //     firstName: userInfo.firstName,
-        //     lastName: userInfo.lastName,
-        //     dateOfBirth: userInfo.dateOfBirth,
-        // }, {
-        //     "Authorization": "Bearer " + userInfo.accessToken
-        // });
+    });
+
+    it('Validation error if user id is not uuid', async () => {
+
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        (await getUser.makeRequest(faker.name.findName(), {
+            "Authorization": "Bearer " + testData.fullAccessToken
+        })).assertValidationError();
+
+    });
+
+    it('Cannot get user if unauthenticated', async () => {
+
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
+
+        (await getUser.makeRequest(testData.id, { "Authorization": "Bearer "})).assertUnauthorizedError();
+
+        (await getUser.makeRequest(testData.id, { "Authorization": "Bearer abc" })).assertUnauthorizedError();
+
+        (await getUser.makeRequest(testData.id)).assertUnauthorizedError();
 
     });
 
     it('Cannot get user if authenticated & has sent friend request to user', async () => {
 
-        // const userInfo = await setupGetUserTest();
-
-        // await getUserAndAssertSuccess({
-        //     id: userInfo.id,
-        //     username: userInfo.username,
-        //     firstName: userInfo.firstName,
-        //     lastName: userInfo.lastName,
-        //     dateOfBirth: userInfo.dateOfBirth,
-        // }, {
-        //     "Authorization": "Bearer " + userInfo.accessToken
-        // });
+        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        (await getUser.makeRequest(testData.user.username, {
+            "Authorization": "Bearer " + testData.otherUser.fullAccessToken
+        })).assertForbbidenError();
 
     });
 
     it('Cannot get user if authenticated & are not friends', async () => {
 
-        //
-
+        const userTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
+        (await getUser.makeRequest(otherUserTestData.id, {
+            "Authorization": "Bearer " + userTestData.fullAccessToken
+        })).assertForbbidenError();
+    
     });
 
     it('Cannot get user if authenticated & user does not exist', async () => {
 
-        //
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        (await getUser.makeRequest(uuid(), {
+            "Authorization": "Bearer " + testData.fullAccessToken
+        })).assertForbbidenError();
 
     });
 

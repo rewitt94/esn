@@ -5,7 +5,7 @@ import { ConflictStatus, ForbiddenStatus } from "../utils/HTTPStatuses";
 import { HTTPError } from "../utils/HTTPError";
 import MappingEntityFactory from "../factories/MappingEntityFactory";
 import ValidationHelper from "../utils/ValidationHelper";
-import { AttendanceType } from "../enums/AttendanceType";
+import { AttendanceStatus } from "../enums/AttendanceStatus";
 
 class EventService {
 
@@ -28,7 +28,7 @@ class EventService {
     getEvent = async (eventId: string): Promise<Event> => {
         const event = await this.eventRepository.findOne({ where: { id: eventId } });
         if (event === undefined) {
-            throw new HTTPError(ForbiddenStatus)
+            throw new HTTPError(ForbiddenStatus, 'getEvent - could not find event by Id', { eventId })
         }
         return event;
     };
@@ -36,7 +36,7 @@ class EventService {
     getAttendance = async (userId: string, eventId: string): Promise<Attendance> => {
         const attendance = await this.attendanceRepository.findOne({ where: { user: userId, event: eventId } });
         if (attendance === undefined) {
-            throw new HTTPError(ForbiddenStatus);
+            throw new HTTPError(ForbiddenStatus, 'getAttendance - could not find attendance by eventId & userId', { eventId, userId });
         }
         return attendance;
     }
@@ -48,17 +48,17 @@ class EventService {
     createAttendance = async (attendance: Attendance): Promise<void> => {
         const existingAttendance = await this.attendanceRepository.findOne({ where: { user: attendance.user, event: attendance.event } });
         if (!!existingAttendance) {
-            throw new HTTPError(ConflictStatus);
+            throw new HTTPError(ConflictStatus, 'createAttendance - cannot create attendance because already exists', { existingAttendance });
         }
         await this.attendanceRepository.save(attendance);
     }
 
-    updateAttendance = async (userId: string, eventId: string, attendanceType: AttendanceType) => {
+    updateAttendance = async (userId: string, eventId: string, attendanceStatus: AttendanceStatus) => {
         const attendance = await this.attendanceRepository.findOne({ where: { user: userId, event: eventId } });
         if (attendance === undefined) {
-            throw new HTTPError(ForbiddenStatus)
+            throw new HTTPError(ForbiddenStatus, 'updateAttendance - cannot update attendance because doesn\'t exist', { userId, eventId });
         };
-        attendance.attendanceType = attendanceType;
+        attendance.AttendanceStatus = attendanceStatus;
         await this.eventRepository.update(attendance.id, attendance);
     }
 
@@ -85,7 +85,7 @@ class EventService {
         const validationPromises = attendances.map(async attendance => {
             const existingAttendance = await this.attendanceRepository.findOne({ where: { user: attendance.user, event: attendance.event } });
             if (!!existingAttendance) {
-                throw new HTTPError(ConflictStatus);
+                throw new HTTPError(ConflictStatus, 'inviteUsersToEvent - failed to invite user to event because invite already exists', { existingAttendance });
             }
         })
         await Promise.all(validationPromises).catch( err => { throw err });
@@ -97,7 +97,7 @@ class EventService {
 
     getEventExpectedAttendanceUserIds = async (eventId: string): Promise<string[]> => {
         const attendances = await this.attendanceRepository.find({ where: { event: eventId } });
-        attendances.filter(attendance => (attendance.attendanceType === AttendanceType.ATTENDING || attendance.attendanceType === AttendanceType.HOPEFULLY))
+        attendances.filter(attendance => (attendance.AttendanceStatus === AttendanceStatus.ATTENDING || attendance.AttendanceStatus === AttendanceStatus.HOPEFULLY))
         return attendances.map(attendance => attendance.user);
     }
 

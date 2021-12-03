@@ -9,10 +9,10 @@ export default class User {
     @PrimaryColumn("uuid")
     id: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsISO8601()
     @Column()
-    dateCreated: string;
+    dateCreated?: string;
 
     @IsNotEmpty()
     @IsString()
@@ -30,17 +30,23 @@ export default class User {
     @IsString()
     @MaxLength(50)
     @Column({ nullable: true })
-    firstName: string;
+    firstName?: string;
 
     @IsOptional()
     @IsString()
     @MaxLength(50)
     @Column({ nullable: true })
-    lastName: string;
+    lastName?: string;
 
     @IsOptional()
     @IsISO8601()
     @Column({ nullable: true })
-    dateOfBirth: string;
+    dateOfBirth?: string;
+
+    removePrivateData() {
+        delete this.hashedPassword;
+        delete this.dateCreated;
+        return this;
+    }
 
 }

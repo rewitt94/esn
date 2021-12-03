@@ -1,7 +1,7 @@
 import typeorm, { getRepository } from "typeorm";
 import { ConflictStatus, ForbiddenStatus } from "../utils/HTTPStatuses";
 import { HTTPError } from "../utils/HTTPError";
-import { MembershipType } from "../enums/MembershipType";
+import { MembershipStatus } from "../enums/MembershipStatus";
 import MappingEntityFactory from "../factories/MappingEntityFactory";
 import ValidationHelper from "../utils/ValidationHelper";
 import Community from '../entities/Community';
@@ -28,7 +28,7 @@ class CommuntiyService {
     getCommunity = async (communityId: string): Promise<Community> => {
         const community = await this.communityRepository.findOne({ where: { id: communityId } });
         if (community === undefined) {
-            throw new HTTPError(ForbiddenStatus);
+            throw new HTTPError(ForbiddenStatus, 'getCommunity - community not found by communityId', { communityId });
         }
         return community;
     }
@@ -39,9 +39,9 @@ class CommuntiyService {
 
     saveMemberships = async (memberships: Membership[]): Promise<void> => {
         const validationPromises = memberships.map(async membership => {
-            const existingAttendance = await this.membershipRepository.findOne({ where: { user: membership.user, community: membership.community } });
-            if (!!existingAttendance) {
-                throw new HTTPError(ConflictStatus);
+            const existingMembership = await this.membershipRepository.findOne({ where: { user: membership.user, community: membership.community } });
+            if (!!existingMembership) {
+                throw new HTTPError(ConflictStatus, 'saveMemberships - membership cannot be saved as already exists', existingMembership);
             }
         })
         await Promise.all(validationPromises).catch( err => { throw err });
@@ -58,7 +58,7 @@ class CommuntiyService {
     saveCommunity = async (community: Community): Promise<void> => {
         const existingCommunity = await this.communityRepository.findOne({ where: { name: community.name } });
         if (!!existingCommunity) {
-            throw new HTTPError(ConflictStatus);
+            throw new HTTPError(ConflictStatus, 'saveCommunity - failed to save community being community already exists', { community });
         }
         await this.communityRepository.save(community);
     };
@@ -66,7 +66,7 @@ class CommuntiyService {
     getMembership = async (userId: string, communityId: string): Promise<Membership> => {
         const membership = await this.membershipRepository.findOne({ where: { user: userId, community: communityId } });
         if (membership === undefined) {
-            throw new HTTPError(ForbiddenStatus);
+            throw new HTTPError(ForbiddenStatus, 'getMembership - membership not found by communityId and userId', { userId, communityId });
         }
         return membership;
     }
@@ -77,19 +77,19 @@ class CommuntiyService {
 
     getCommunityMemberIds = async (communityId: string): Promise<string[]> => {
         const memberships = await this.membershipRepository.find({ where: { community: communityId } });
-        memberships.filter(membership => membership.membershipType === MembershipType.ADMIN || membership.membershipType === MembershipType.MEMBER);
+        memberships.filter(membership => membership.MembershipStatus === MembershipStatus.ADMIN || membership.MembershipStatus === MembershipStatus.MEMBER);
         return memberships.map(membership => membership.user);
     }
 
     getCommunityAdminIds = async (communityId: string): Promise<string[]> => {
         const memberships = await this.membershipRepository.find({ where: { community: communityId } });
-        memberships.filter(membership => membership.membershipType === MembershipType.ADMIN);
+        memberships.filter(membership => membership.MembershipStatus === MembershipStatus.ADMIN);
         return memberships.map(membership => membership.user);
     }
 
     getUsersCommunityIds = async (userId: string): Promise<string[]> => {
         const memberships = await this.membershipRepository.find({ where: { community: userId } });
-        memberships.filter(membership => membership.membershipType === MembershipType.ADMIN || membership.membershipType === MembershipType.MEMBER);
+        memberships.filter(membership => membership.MembershipStatus === MembershipStatus.ADMIN || membership.MembershipStatus === MembershipStatus.MEMBER);
         return memberships.map(membership => membership.community);
     }
 
@@ -103,7 +103,7 @@ class CommuntiyService {
         const validationPromises = memberships.map(async membership => {
             const existingMembership = await this.membershipRepository.findOne({ where: { user: membership.user, community: membership.community } });
             if (!!existingMembership) {
-                throw new HTTPError(ConflictStatus);
+                throw new HTTPError(ConflictStatus, 'inviteUsersToCommunity - failed to invite user to community because invite already exists', { existingMembership });
             }
         })
         await Promise.all(validationPromises).catch( err => { throw err });
@@ -116,14 +116,14 @@ class CommuntiyService {
     acceptMembership = async (userId: string, communityId: string): Promise<void> => {
         const existingMembership = await this.membershipRepository.findOne({ where: { user: userId, community: communityId } });
         if (!!existingMembership) {
-            if (existingMembership.membershipType !== MembershipType.INVITED) {
-                throw new HTTPError(ConflictStatus);
+            if (existingMembership.MembershipStatus !== MembershipStatus.INVITED) {
+                throw new HTTPError(ConflictStatus, 'acceptMembership - cannot accept community invite membership is not in INVITED status', { existingMembership });
             }
-            existingMembership.membershipType = MembershipType.MEMBER;
+            existingMembership.MembershipStatus = MembershipStatus.MEMBER;
             await this.membershipRepository.update(existingMembership.id, existingMembership);
             return;
         }
-        throw new HTTPError(ForbiddenStatus);
+        throw new HTTPError(ForbiddenStatus, 'acceptMembership - membership not found by communityId and userId', { userId, communityId });
     }
 
 }

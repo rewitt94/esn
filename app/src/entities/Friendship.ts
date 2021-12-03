@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsUUID, IsEnum } from "class-validator";
-import { FriendshipType } from "../enums/FriendshipType";
+import { FriendshipStatus } from "../enums/FriendshipStatus";
 import { Entity, PrimaryColumn, Column } from "typeorm";
 
 @Entity()
@@ -21,8 +21,8 @@ export default class Friendship {
     userTwo: string;
 
     @IsNotEmpty()
-    @IsEnum(FriendshipType)
+    @IsEnum(FriendshipStatus)
     @Column()
-    friendshipType: FriendshipType;
+    FriendshipStatus: FriendshipStatus;
 
 }

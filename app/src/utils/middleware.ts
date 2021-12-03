@@ -1,50 +1,70 @@
 import * as express from 'express';
+import Logger from './Logger'
 import { HTTPError } from "./HTTPError";
 import { HTTPMethods } from "../enums/HTTPMethods";
 import { ServerErrorStatus } from "./HTTPStatuses";
 import AuthService from '../services/AuthService';
 
-export type HTTPHandler = (request: express.Request, response: express.Response) => Promise<any>
+export type HTTPHandler = (request: express.Request, response: express.Response, logger: Logger) => Promise<any>
 
 export type Middleware = (handlerFunction: HTTPHandler) => HTTPHandler
 
-export const initialiseRoute = (router: express.Router, httpMethod: HTTPMethods, path: string | RegExp, middlewareFunctions: Middleware[], handlerFunction: HTTPHandler) => {
-    let handler: HTTPHandler = middlewareFunctions[middlewareFunctions.length - 1](handlerFunction)
-    for (let index = middlewareFunctions.length - 2; index >= 0; index--) {
-        handler = middlewareFunctions[index](handler);
+export const initialiseRoute = (router: express.Router, httpMethod: HTTPMethods, controllerPath: string, resourcePath: string | RegExp, middlewareFunctions: Middleware[], handlerFunction: HTTPHandler) => {
+    for (let index = middlewareFunctions.length - 1; index >= 0; index--) {
+        handlerFunction = middlewareFunctions[index](handlerFunction);
     }
+    const handler = wrapHandler(httpMethod, controllerPath, resourcePath, handlerFunction);
     switch(httpMethod) {
         case HTTPMethods.GET:
-            router.get(path, handler);
+            router.get(resourcePath, handler);
             break;
         case HTTPMethods.POST:
-            router.post(path, handler);
+            router.post(resourcePath, handler);
             break;
         case HTTPMethods.PUT:
-            router.put(path, handler);
+            router.put(resourcePath, handler);
     };
 };
 
-export const errorHandleHTTPHandler: Middleware = (callback: HTTPHandler) => {
+export const wrapHandler = (httpMethod: HTTPMethods, controllerPath: string, resourcePath: string | RegExp, callback: HTTPHandler) => {
     return async (request: express.Request, response: express.Response) => {
+        const logger = new Logger();
         try {
-            await callback(request, response)
+            await callback(request, response, logger)
+            logger.access(`${httpMethod} ${controllerPath}${resourcePath} ${response.statusCode}`)
+            return
         } catch (err) {
             if (err instanceof HTTPError) {
                 response.status(err.statusCode)
                 response.json({ error: err.message });
-                return response;
+                if (!!err.internalLogData) {
+                    logger.error(err.internalErrorMessage, err.internalLogData);
+                } else {
+                    logger.error(err.internalErrorMessage);
+                }
+                logger.access(`${httpMethod} ${controllerPath}${resourcePath} ${err.statusCode}`)
+                return
             }
             response.status(ServerErrorStatus.statusCode)
             response.json({ error: ServerErrorStatus.publicErrorMessage });
-            return response;
+            logger.error(JSON.stringify(err));
+            logger.access(`${httpMethod} ${controllerPath}${resourcePath} ${ServerErrorStatus.statusCode}`)
+            return
         }
     }
 };
 
-export const validateAccessToken: Middleware =  (callback: HTTPHandler) => {
-    return async (request: express.Request, response: express.Response) => {
-        AuthService.getInstance().validateAccessToken(request)
-        await callback(request, response)
+export const validateFullAccessToken: Middleware =  (callback: HTTPHandler) => {
+    return async (request: express.Request, response: express.Response, logger: Logger) => {
+        AuthService.getInstance().validateFullAccessToken(request)
+        await callback(request, response, logger)
     }
 };
+
+export const validateInitialAccessToken: Middleware =  (callback: HTTPHandler) => {
+    return async (request: express.Request, response: express.Response, logger: Logger) => {
+        AuthService.getInstance().validateInitialAccessToken(request)
+        await callback(request, response, logger)
+    }
+};
+

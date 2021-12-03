@@ -1,16 +1,16 @@
 import { IsNotEmpty, IsEnum, IsUUID } from "class-validator";
-import { AttendanceType } from "../enums/AttendanceType";
+import { AttendanceStatus } from "../enums/AttendanceStatus";
 
 export default class UpdateAttendanceRequest {
 
     constructor(data: any) {
         this.event = data.event!;
-        this.attendanceType = data.attendanceType!;
+        this.AttendanceStatus = data.AttendanceStatus!;
     }
 
     @IsNotEmpty()
-    @IsEnum(AttendanceType)
-    attendanceType: AttendanceType;
+    @IsEnum(AttendanceStatus)
+    AttendanceStatus: AttendanceStatus;
 
     @IsNotEmpty()
     @IsUUID("4")
