@@ -1,6 +1,6 @@
 import Event from "../entities/Event";
 import moment from "moment";
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import { IsNotEmpty, IsOptional, IsString, IsUUID, IsISO8601 } from "class-validator";
 
 export default class CreateCommunityEventRequest {

@@ -29,9 +29,13 @@ class UserService {
     };
 
     saveUser = async (user: User): Promise<void> => {
-        const existingUser = await this.userRepository.findOne({ where: { username: user.username } });
+        let existingUser = await this.userRepository.findOne({ where: { username: user.username } });
         if (!!existingUser) {
-            throw new HTTPError(ConflictStatus, 'saveUser - cannot save user because user already exists', { existingUser });
+            throw new HTTPError(ConflictStatus, 'saveUser - cannot save user because username already exists', { existingUser });
+        }
+        existingUser = await this.userRepository.findOne({ where: { id: user.id } });
+        if (!!existingUser) {
+            throw new HTTPError(ConflictStatus, 'saveUser - cannot save user because user id already exists', { existingUser });
         }
         await this.userRepository.save(user);
     };
@@ -57,7 +61,7 @@ class UserService {
     }
 
     updateUser = async (user: User): Promise<void> => {
-        await this.userRepository.update(user.id, user);
+        await this.userRepository.update(user.id!, user);
     }
 
     userExists = async (userId: string): Promise<boolean> => {
@@ -73,7 +77,7 @@ class UserService {
         if (!user) {
             throw new HTTPError(ForbiddenStatus, 'usernameToId - user not found by username', { username });
         }
-        return user.id;
+        return user.id!;
     }
 
     addFriend = async (inviteeId: string, requesterId: string, logger: Logger): Promise<void> => {
@@ -95,7 +99,6 @@ class UserService {
 
     friendInviteExists = async (inviteeId: string, requesterId: string) : Promise<boolean> => {
         const friendship = await this.friendRepository.findOne({ where: { userOne: inviteeId, userTwo: requesterId } });
-        console.log(friendship)
         return !!friendship && friendship.FriendshipStatus === FriendshipStatus.REQUESTED;
     }
 
@@ -116,7 +119,7 @@ class UserService {
         let friendships: Friendship[] = [];
         friendships = friendships.concat(await this.friendRepository.find({ where: { userOne: userId } }));
         friendships = friendships.concat(await this.friendRepository.find({ where: { userTwo: userId } }));
-        friendships.filter(friendship => friendship.FriendshipStatus === FriendshipStatus.ACCEPTED);
+        friendships = friendships.filter(friendship => friendship.FriendshipStatus === FriendshipStatus.ACCEPTED);
         const promises = friendships.map(async friendship => {
             if (friendship.userOne === userId) {
                 return await this.userRepository.findOne(friendship.userTwo);
@@ -128,13 +131,13 @@ class UserService {
     };
 
     getFriendRequests =  async (userId: string): Promise<User[]> => {
-        const friendRequests = await this.friendRepository.find({ where: { userTwo: userId } });
-        friendRequests.filter(friendship => friendship.FriendshipStatus === FriendshipStatus.REQUESTED);
+        let friendRequests = await this.friendRepository.find({ where: { userOne: userId } });
+        friendRequests = friendRequests.filter(friendship => friendship.FriendshipStatus === FriendshipStatus.REQUESTED);
         const promises = friendRequests.map(async friendRequest => {
-            return await this.userRepository.findOne(friendRequest.userOne);
+            return await this.userRepository.findOne(friendRequest.userTwo);
         });
         const friends = await Promise.all(promises).catch(err => { throw err })
-        return friends.filter(this.notEmpty);
+        return friends.filter(this.notEmpty).map(user => user.removePrivateData());
     };
 
     areFriends = async (userOne: string, userTwo: string): Promise<boolean> => {

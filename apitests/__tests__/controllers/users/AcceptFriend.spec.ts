@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import { AcceptFriend } from "../../../src/endpoints/users/AcceptFriend";
-import { FriendshipStatusEnum } from "../../../src/enums/FriendshipStatusEnum";
+import { FriendshipStatus } from "../../../src/enums/FriendshipStatus";
 import { TestDataSetup } from "../../../src/utils/TestDataSetup";
 
 describe("Accept Friend", () => {
@@ -16,18 +16,28 @@ describe("Accept Friend", () => {
 
         const testData = await TestDataSetup.createUserWithPendingFriendRequest();
         (await acceptFriend.makeRequest(
-            { username: testData.otherUser.username, status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED }, 
             { "Authorization": "Bearer " + testData.user.fullAccessToken }
         )).assertSuccess();
+
+    });
+
+    it("Cannot accept friend with initial access token", async () => {
+
+        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        (await acceptFriend.makeRequest(
+            { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED }, 
+            { "Authorization": "Bearer " + testData.user.initialAccessToken }
+        )).assertForbbidenError();
 
     });
 
     it("Cannot accept friend if unauthenticated", async () => {
 
         const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
-        (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatusEnum.ACCEPTED }, { "Authorization": "Bearer " + "ABC" })).assertUnauthorizedError();
-        (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatusEnum.ACCEPTED }, { "Origin": "ESN" })).assertUnauthorizedError();
-        (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatusEnum.ACCEPTED }, {})).assertUnauthorizedError();
+        (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, { "Authorization": "Bearer " + "ABC" })).assertUnauthorizedError();
+        (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, { "Origin": "ESN" })).assertUnauthorizedError();
+        (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, {})).assertUnauthorizedError();
 
     });
 
@@ -35,7 +45,7 @@ describe("Accept Friend", () => {
 
         const userTestData = await TestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest(
-            { username: userTestData.username, status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: userTestData.username, status: FriendshipStatus.ACCEPTED }, 
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
         )).assertForbbidenError();
 
@@ -46,7 +56,7 @@ describe("Accept Friend", () => {
         const userTestData = await TestDataSetup.createUserWithFullAccessToken();
         const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest(
-            { username: otherUserTestData.username, status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, 
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
         )).assertForbbidenError();
 
@@ -56,7 +66,7 @@ describe("Accept Friend", () => {
 
         const userTestData = await TestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest(
-            { username: uuid(), status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: uuid(), status: FriendshipStatus.ACCEPTED }, 
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
         )).assertForbbidenError();
 
@@ -66,11 +76,11 @@ describe("Accept Friend", () => {
 
         const testData = await TestDataSetup.createUsersWhoAreFriends();
         (await acceptFriend.makeRequest(
-            { username: testData.otherUser.username, status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED }, 
             { "Authorization": "Bearer " + testData.user.fullAccessToken }
         )).assertForbbidenError();
         (await acceptFriend.makeRequest(
-            { username: testData.user.username, status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: testData.user.username, status: FriendshipStatus.ACCEPTED }, 
             { "Authorization": "Bearer " + testData.otherUser.fullAccessToken }
         )).assertForbbidenError();
 
@@ -84,8 +94,8 @@ describe("Accept Friend", () => {
         const invalidAttemps = [
             { username: otherUser.username, status: "pending" }, 
             { username: otherUser.username, status: "rejected" }, 
-            { username: "O", status: FriendshipStatusEnum.ACCEPTED }, 
-            { username: "thereisafiftycharacterlimitandthisstringisfarfarfarfartoolong", status: FriendshipStatusEnum.ACCEPTED }, 
+            { username: "O", status: FriendshipStatus.ACCEPTED }, 
+            { username: "thereisafiftycharacterlimitandthisstringisfarfarfarfartoolong", status: FriendshipStatus.ACCEPTED }, 
         ]
 
         for (const attempt of invalidAttemps) {
@@ -95,6 +105,11 @@ describe("Accept Friend", () => {
 
     });
 
+    
+    it("Accept friend triggers expected notifications", async () => {
 
+        throw new Error('test to be written')
+
+    });
 
 });

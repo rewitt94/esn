@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import Attendance from "../entities/Attendance";
 import Membership from "../entities/Membership";
 import Friendship from "../entities/Friendship";

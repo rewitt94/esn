@@ -9,18 +9,19 @@
         "prestart": "npm run build",
         "start": "node .",
         "test": "jest --verbose",
-        "test:cov": "jest --verbose --coverage"
+        "test:cov": "jest --verbose --coverage",
+        "psql": "docker exec -it $(docker ps -q -n 1) psql -U app -d directo"
     },
     "dependencies": {
+        "bcrypt": "5.0.0",
         "class-validator": "^0.12.2",
+        "dotenv": "8.2.0",
         "express": "^4.17.1",
+        "jsonwebtoken": "8.5.1",
         "moment": "^2.27.0",
         "pg": "^8.5.1",
         "typeorm": "^0.2.25",
-        "uuidv4": "^6.2.3",
-        "bcrypt": "5.0.0",
-        "dotenv": "8.2.0",
-        "jsonwebtoken": "8.5.1"
+        "uuid": "^8.3.2"
     },
     "devDependencies": {
         "@types/bcrypt": "^3.0.0",
@@ -29,9 +30,10 @@
         "@types/jest": "^26.0.19",
         "@types/jsonwebtoken": "^8.5.0",
         "@types/node": "^14.6.4",
+        "@types/uuid": "^8.3.3",
         "jest": "26.4.2",
-        "ts-jest": "26.4.4",
         "jest-mock-extended": "1.0.10",
+        "ts-jest": "26.4.4",
         "tslint": "^6.1.3",
         "typescript": "^4.0.2"
     },

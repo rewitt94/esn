@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { FriendshipStatusEnum } from '../../enums/FriendshipStatusEnum';
+import { FriendshipStatus } from '../../enums/FriendshipStatus';
 import { HTTPEndpoint, HTTPApiMethodResponse } from "../../utils/HTTPAssertions";
 
 interface AcceptFriendResponse {
@@ -8,7 +8,7 @@ interface AcceptFriendResponse {
 
 interface AcceptFriendPayload {
     username: string,
-    status: FriendshipStatusEnum
+    status: FriendshipStatus
 };
 
 export class AcceptFriend extends HTTPEndpoint<AcceptFriendPayload, AcceptFriendResponse> {

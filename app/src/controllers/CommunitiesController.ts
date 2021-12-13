@@ -6,7 +6,7 @@ import { HTTPHandler, initialiseRoute, validateFullAccessToken } from "../utils/
 import AuthService from '../services/AuthService';
 import CommunityService from '../services/CommunityService';
 import UserService from '../services/UserService';
-import MappingEntityFactory from '../factories/MappingEntityFactory';
+// import MappingEntityFactory from '../factories/MappingEntityFactory';
 import CommunityObject from '../requestbody/CommunityObject';
 import CreateCommunityRequest from '../requestbody/CreateCommunityRequest';
 import CommunityInviteRequest from '../requestbody/CommunityInviteRequest';
@@ -27,13 +27,61 @@ class CommunitiesController implements BaseController {
   }
 
   public intializeRoutes = () => {
-    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getCommunity);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/", [validateFullAccessToken], this.createCommunity);
+    initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/", [validateFullAccessToken], this.editCommunity);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/membership", [validateFullAccessToken], this.inviteToCommunity);
+    initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/membership", [validateFullAccessToken], this.acceptInviteToCommunity);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getCommunities);
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:communityId", [validateFullAccessToken], this.getCommunity);
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:communityId/members", [validateFullAccessToken], this.getCommunityMembers);
-    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/", [validateFullAccessToken], this.createCommunity);
-    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/invite", [validateFullAccessToken], this.inviteToCommunity);
-    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/accept", [validateFullAccessToken], this.acceptInviteToCommunity);
-    initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/", [validateFullAccessToken], this.editCommunity);
+  }
+
+  createCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+    const createCommunityRequest = new CreateCommunityRequest(request.body);
+    await ValidationHelper.validateRequestBody(createCommunityRequest);
+    const community = createCommunityRequest.toNewCommunity();
+    await ValidationHelper.validateEntity(community);
+    // const userId = this.authService.getUserId(request);
+    // const adminMembership = MappingEntityFactory.makeAdminMembership(community.id, userId);
+    await this.communityService.saveCommunity(community);
+    // await this.communityService.saveMemberships([adminMembership]);
+    response.status(201);
+    response.json(community);
+  }
+
+  editCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+    const updateCommunityRequest = new UpdateCommunityRequest(request.body);
+    await ValidationHelper.validateRequestBody(updateCommunityRequest);
+    const userId = this.authService.getUserId(request);
+    await this.authService.validateUserIsCommunityAdmin(userId, updateCommunityRequest.community);
+    const community = updateCommunityRequest.toCommunity();
+    await this.communityService.updateCommunity(community);
+    await this.notificationService.sendCommunityUpdateNotifications(userId, community.id);
+    response.status(200);
+    response.json(community);
+  }
+
+  inviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+    const communityInviteRequest = new CommunityInviteRequest(request.body);
+    await ValidationHelper.validateRequestBody(communityInviteRequest);
+    const userId = this.authService.getUserId(request);
+    await this.authService.validateUserIsCommunityAdmin(userId, communityInviteRequest.community);
+    await this.authService.validateInviteesAreFriends(userId, communityInviteRequest.invitees);
+    await this.communityService.inviteUsersToCommunity(communityInviteRequest.community, communityInviteRequest.invitees);
+    await this.notificationService.sendCommunityInviteNotifications(communityInviteRequest.community, communityInviteRequest.invitees, userId);
+    response.status(201);
+    response.json({ message: "Community invites sent" });
+  }
+
+  acceptInviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+    const communityObject = new CommunityObject(request.body);
+    await ValidationHelper.validateRequestBody(communityObject);
+    const { community } = communityObject;
+    const userId = this.authService.getUserId(request);
+    await this.communityService.acceptMembership(userId, community);
+    await this.notificationService.sendAcceptCommunityNotification(userId, community);
+    response.status(200);
+    response.json({ message: "Community invite accepted" });
   }
 
   getCommunities: HTTPHandler = async (request: express.Request, response: express.Response) => {
@@ -73,53 +121,7 @@ class CommunitiesController implements BaseController {
     response.json(members);
   }
 
-  createCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
-    const createCommunityRequest = new CreateCommunityRequest(request.body);
-    await ValidationHelper.validateRequestBody(createCommunityRequest);
-    const community = createCommunityRequest.toNewCommunity();
-    await ValidationHelper.validateEntity(community);
-    const userId = this.authService.getUserId(request);
-    const adminMembership = MappingEntityFactory.makeAdminMembership(community.id, userId);
-    await this.communityService.saveCommunity(community);
-    await this.communityService.saveMemberships([adminMembership]);
-    response.status(201);
-    response.json(community);
-  }
 
-  inviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
-    const communityInviteRequest = new CommunityInviteRequest(request.body);
-    await ValidationHelper.validateRequestBody(communityInviteRequest);
-    const userId = this.authService.getUserId(request);
-    await this.authService.validateUserIsCommunityAdmin(userId, communityInviteRequest.community);
-    await this.authService.validateInviteesAreFriends(userId, communityInviteRequest.invitees);
-    await this.communityService.inviteUsersToCommunity(communityInviteRequest.community, communityInviteRequest.invitees);
-    await this.notificationService.sendCommunityInviteNotifications(communityInviteRequest.community, communityInviteRequest.invitees, userId);
-    response.status(201);
-    response.json({ message: "Community invites sent" });
-  }
-
-  acceptInviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
-    const communityObject = new CommunityObject(request.body);
-    await ValidationHelper.validateRequestBody(communityObject);
-    const { community } = communityObject;
-    const userId = this.authService.getUserId(request);
-    await this.communityService.acceptMembership(userId, community);
-    await this.notificationService.sendAcceptCommunityNotification(userId, community);
-    response.status(200);
-    response.json({ message: "Community invite accepted" });
-  }
-
-  editCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
-    const updateCommunityRequest = new UpdateCommunityRequest(request.body);
-    await ValidationHelper.validateRequestBody(updateCommunityRequest);
-    const userId = this.authService.getUserId(request);
-    await this.authService.validateUserIsCommunityAdmin(userId, updateCommunityRequest.community);
-    const community = updateCommunityRequest.toCommunity();
-    await this.communityService.updateCommunity(community);
-    await this.notificationService.sendCommunityUpdateNotifications(userId, community.id);
-    response.status(200);
-    response.json(community);
-  }
 
 }
 

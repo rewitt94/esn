@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import Notification from "../entities/Notification";
 import { NotificationType } from "../enums/NotificationType";
 

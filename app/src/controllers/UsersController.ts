@@ -34,7 +34,7 @@ class UsersController implements BaseController {
     initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/", [validateInitialAccessToken], this.editUser);
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/token", [validateInitialAccessToken], this.getFullAccessToken);
     initialiseRoute(this.router, HTTPMethods.POST, this.path, "/login", [], this.login);
-    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:userId", [validateFullAccessToken], this.getUser);
+    initialiseRoute(this.router, HTTPMethods.GET, this.path, "/user/:userId", [validateFullAccessToken], this.getUser);
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/friends", [validateFullAccessToken], this.getFriends);
     initialiseRoute(this.router, HTTPMethods.POST, this.path, "/friends", [validateFullAccessToken], this.addFriend);
     initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/friends", [validateFullAccessToken], this.acceptFriend);
@@ -43,10 +43,10 @@ class UsersController implements BaseController {
   createUser: HTTPHandler = async (request: express.Request, response: express.Response) => {
     const createUserRequest = new CreateUserRequest(request.body);
     await ValidationHelper.validateRequestBody(createUserRequest);
-    const user = createUserRequest.toNewUser();
+    let user = createUserRequest.toNewUser();
     await ValidationHelper.validateEntity(user);
     await this.userService.saveUser(user);
-    delete user.hashedPassword;
+    user = user.removePrivateData();
     response.status(201);
     response.json(user);
   }
@@ -88,14 +88,14 @@ class UsersController implements BaseController {
   getFriends: HTTPHandler = async (request: express.Request, response: express.Response) => {
     if (request.query.status === FriendshipStatus.REQUESTED) {
       const userId = this.authService.getUserId(request);
-      const friends = await this.userService.getFriends(userId);
+      const friends = await this.userService.getFriendRequests(userId);
       response.status(200);
       response.json(friends);
       return;
     };
     if (request.query.status === FriendshipStatus.ACCEPTED) {
       const userId = this.authService.getUserId(request);
-      const friendRequests = await this.userService.getFriendRequests(userId);
+      const friendRequests = await this.userService.getFriends(userId);
       response.status(200);
       response.json(friendRequests);
       return;

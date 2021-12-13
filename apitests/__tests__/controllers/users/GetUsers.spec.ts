@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import faker from "faker";
 import { GetUser } from "../../../src/endpoints/users/GetUser";

@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { Login } from "../../../src/endpoints/users/Login";
 import { AccessTokenStatus } from "../../../src/enums/AccessTokenStatus";

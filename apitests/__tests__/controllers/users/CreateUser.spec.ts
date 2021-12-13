@@ -1,8 +1,8 @@
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { CreateUser } from "../../../src/endpoints/users/CreateUser";
 
-describe("Create user", () => {
+describe("Create User", () => {
 
     const createUser = new CreateUser();
 

@@ -1,4 +1,4 @@
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { AddFriend } from "../../../src/endpoints/users/AddFriend";
 import { TestDataSetup } from "../../../src/utils/TestDataSetup";
@@ -18,6 +18,16 @@ describe("Add Friend", () => {
         const payload = { username: otherUserTestData.username };
         const headers = { "Authorization": "Bearer " + userTestData.fullAccessToken };
         (await addFriend.makeRequest(payload, headers)).assertSuccess();
+
+    });
+
+    it("Cannot add friend with initial access token", async () => {
+
+        const userTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const payload = { username: otherUserTestData.username };
+        const headers = { "Authorization": "Bearer " + userTestData.initialAccessToken };
+        (await addFriend.makeRequest(payload, headers)).assertForbbidenError();
 
     });
 
@@ -109,7 +119,7 @@ describe("Add Friend", () => {
     });
 
 
-    it("Add user triggers expected notifications", async () => {
+    it("Add friend triggers expected notifications", async () => {
 
         throw new Error('test to be written')
 

@@ -1,7 +1,7 @@
 import User from "../entities/User";
 import moment from "moment";
 import bcrypt from "bcrypt";
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import { IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
 
 const saltRounds = 12;

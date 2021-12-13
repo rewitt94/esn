@@ -9,7 +9,11 @@ interface CreateUserPayload {
 interface CreateUserResponse {
     id: string,
     username: string,
-    dateCreated: string,
+    dateCreated: undefined,
+    hashedPassword: undefined,
+    firstName: null,
+    lastName: null,
+    dateOfBirth: null,
 }
 
 export class CreateUser extends HTTPEndpoint<CreateUserPayload, CreateUserResponse> {
@@ -31,10 +35,12 @@ export class CreateUser extends HTTPEndpoint<CreateUserPayload, CreateUserRespon
     assertSuccess = (statusCode: number, responseBody: CreateUserResponse, requestBody: CreateUserPayload): void => {
         expect(statusCode).toEqual(201);
         expect(responseBody.username).toEqual(requestBody.username);
-        // @ts-ignore
+        expect(responseBody.firstName).toEqual(null)
+        expect(responseBody.lastName).toEqual(null)
+        expect(responseBody.dateOfBirth).toEqual(null)
+        expect(responseBody.dateCreated).toEqual(undefined);
         expect(responseBody.hashedPassword).toEqual(undefined);
         expect(responseBody.id).toMatch(/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/);
-        expect(responseBody.dateCreated).toMatch(/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/);
     }
         
 }

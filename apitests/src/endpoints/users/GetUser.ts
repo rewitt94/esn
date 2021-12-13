@@ -12,7 +12,7 @@ interface UserInfo {
 export class GetUser extends HTTPEndpoint<string, UserInfo, UserInfo> {
 
     httpRequest = async (userId: string, headers: object):  Promise<HTTPApiMethodResponse<UserInfo>> => {
-        const response = await fetch(process.env.BASE_URL + "/users/" + userId, {
+        const response = await fetch(process.env.BASE_URL + "/users/user/" + userId, {
             method: "GET",
             headers: Object.assign({
                 "Content-Type": "application/json"

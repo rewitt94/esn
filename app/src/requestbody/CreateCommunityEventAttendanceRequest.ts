@@ -1,5 +1,5 @@
 import moment from "moment";
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
 import { IsNotEmpty, IsEnum, IsString } from "class-validator";
 import Attendance from "../entities/Attendance";
 import { AttendanceStatus } from "../enums/AttendanceStatus";

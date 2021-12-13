@@ -17,8 +17,8 @@ export default class Community {
 
     @IsOptional()
     @IsEnum(CommunityType)
-    @Column()
-    communityType: string;
+    @Column({ nullable: true })
+    communityType?: string;
 
     @IsNotEmpty()
     @IsString()

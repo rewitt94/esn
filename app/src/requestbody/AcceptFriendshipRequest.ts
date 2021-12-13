@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, MinLength, MaxLength, Matches } from "class-validator";
+import { IsNotEmpty, IsString, MinLength, MaxLength, Equals } from "class-validator";
 import { FriendshipStatus } from "../enums/FriendshipStatus";
 
 export default class AcceptFriendshipRequest {
@@ -15,7 +15,7 @@ export default class AcceptFriendshipRequest {
     username: string;
 
     @IsNotEmpty()
-    @Matches(FriendshipStatus.ACCEPTED)
+    @Equals(FriendshipStatus.ACCEPTED)
     status: string;
 
 }

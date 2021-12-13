@@ -10,7 +10,7 @@ export default class ValidationHelper {
         try {
             await validateOrReject(requestBody);
         } catch (validationError) {
-            throw new HTTPError(BadRequestStatus, 'validateRequestBody - unable to validate request body', { validationError });
+            throw new HTTPError(BadRequestStatus, 'validateRequestBody - unable to validate request body', { validationError, requestBody });
         }
     }
 

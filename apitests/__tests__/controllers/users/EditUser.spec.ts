@@ -24,19 +24,6 @@ describe("Edit User", () => {
 
     });
 
-    it("edit user is possible with full access token", async () => {
-
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
-        (await editUser.makeRequest({
-            firstName: faker.name.firstName(),
-            lastName: faker.name.lastName(),
-            dateOfBirth: faker.date.past(25).toISOString()
-        }, {
-            "Authorization": "Bearer " + testData.fullAccessToken
-        })).assertSuccess();
-
-    });
-
     it("Cannot edit user if unauthenticated", async () => {
 
         (await editUser.makeRequest({
