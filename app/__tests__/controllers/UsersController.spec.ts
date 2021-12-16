@@ -29,7 +29,7 @@ describe("UsersController", () => {
             // @ts-ignore
             await usersController.createUser({ body: { username: "tester1000", password: "mypassword" }}, mockedResponse);
 
-            expect(mockedUserService.saveUser).toHaveBeenCalled();
+            expect(mockedUserService.insertUser).toHaveBeenCalled();
             expect(mockedResponse.status).toHaveBeenCalledWith(201);
             expect(mockedResponse.json).toHaveBeenCalledWith(expect.objectContaining({
                 username: "tester1000",

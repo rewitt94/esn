@@ -13,8 +13,4 @@ npm run start
 
 ### Known issues
 
-1. Can create an account & progress without adding personal details 
-    - maybe this is not an issue they can just be a username ?
-
-2. hashedPassword / dateCreated is returned along with user data for many endpoints
-    - BIG PROBLEM
+1. Potential chance to overwrite mapping entities (save)

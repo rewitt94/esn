@@ -26,7 +26,7 @@
 
 //             mockedUserRepository.findOne.mockResolvedValueOnce(undefined);
 
-//             await expect(userService.saveUser(USER)).resolves.toEqual(USER);
+//             await expect(userService.insertUser(USER)).resolves.toEqual(USER);
 
 //             expect(mockedUserRepository.findOne).toHaveBeenCalledWith({ username: USER.username });
 //             expect(mockedUserRepository.save).toHaveBeenCalledWith(USER);
@@ -42,7 +42,7 @@
 
 //             mockedUserRepository.findOne.mockResolvedValueOnce(USER);
 
-//             await expect(userService.saveUser(USER)).rejects.toThrowError(expect.objectContaining({
+//             await expect(userService.insertUser(USER)).rejects.toThrowError(expect.objectContaining({
 //                 message: "could not be created",
 //                 statusCode: 409
 //             }));

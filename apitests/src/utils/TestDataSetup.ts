@@ -7,6 +7,9 @@ import { Token } from "../endpoints/users/Token";
 import { AddFriend } from "../endpoints/users/AddFriend";
 import { AcceptFriend } from "../endpoints/users/AcceptFriend";
 import { FriendshipStatus } from "../enums/FriendshipStatus";
+import { CreateCommunity } from "../endpoints/communities/CreateCommunity";
+import { CommunityType } from "../enums/CommunityType";
+import { EditCommunity } from "../endpoints/communities/EditCommunity";
 
 const createUser = new CreateUser();
 const login = new Login();
@@ -14,6 +17,8 @@ const editUser = new EditUser();
 const token = new Token();
 const addFriend = new AddFriend();
 const acceptFriend = new AcceptFriend();
+const createCommunity = new CreateCommunity();
+const editCommunity = new EditCommunity();
 
 export class TestDataSetup {
 
@@ -129,6 +134,69 @@ export class TestDataSetup {
         const pendingFriend = await this.createUserWithFullAccessToken();
         (await addFriend.makeRequest({ username: user.username }, { "Authorization": "Bearer " + pendingFriend.fullAccessToken })).assertSuccess();
         return { user, friend, pendingFriend };
+    }
+
+
+    static async createCommunityAdminAndCommunity() {
+        const admin = await this.createUserWithFullAccessToken();
+        const name = faker.company.companyName();
+        const communityType = [CommunityType.FRIENDS, CommunityType.WORK, CommunityType.SPORTS][Math.floor(Math.random() * 3)]
+        const createCommunityResponse = await createCommunity.makeRequest({ name, communityType }, { "Authorization": "Bearer " + admin.fullAccessToken });
+        const community = createCommunityResponse.assertSuccess();
+        return {
+            admin,
+            community
+        }
+    }
+
+    static async createCommunityWithAdminAndEditCommunity() {
+        const admin = await this.createUserWithFullAccessToken();
+        const name = faker.company.companyName();
+        const communityType = [CommunityType.FRIENDS, CommunityType.WORK, CommunityType.SPORTS][Math.floor(Math.random() * 3)]
+        const createCommunityResponse = await createCommunity.makeRequest({ name, communityType }, { "Authorization": "Bearer " + admin.fullAccessToken });
+        const initialCommunity = createCommunityResponse.assertSuccess();
+        const editCommunityPayload = {
+            id: initialCommunity.id,
+            name: faker.company.companyName(),
+            communityType: [CommunityType.FRIENDS, CommunityType.WORK, CommunityType.SPORTS][Math.floor(Math.random() * 3)]
+        };
+        const editCommunityResponse = await editCommunity.makeRequest(editCommunityPayload, { "Authorization": "Bearer " + admin.fullAccessToken });
+        const community = editCommunityResponse.assertSuccess();
+        return {
+            admin,
+            community
+        }
+    }
+
+    static async createCommunityAdminAndCommunityAndNonMemberFriend() {
+        const admin = await this.createUserWithFullAccessToken();
+        const name = faker.company.companyName();
+        const communityType = [CommunityType.FRIENDS, CommunityType.WORK, CommunityType.SPORTS][Math.floor(Math.random() * 3)]
+        const createCommunityResponse = await createCommunity.makeRequest({ name, communityType }, { "Authorization": "Bearer " + admin.fullAccessToken });
+        const community = createCommunityResponse.assertSuccess();
+        const nonMember = await this.createUserWithFullAccessToken();
+        return {
+            admin,
+            community,
+            nonMember
+        }
+    }
+
+    static async createCommunityAdminAndCommunityAndNNonMembers(n: number) {
+        const admin = await this.createUserWithFullAccessToken();
+        const name = faker.company.companyName();
+        const communityType = [CommunityType.FRIENDS, CommunityType.WORK, CommunityType.SPORTS][Math.floor(Math.random() * 3)]
+        const createCommunityResponse = await createCommunity.makeRequest({ name, communityType }, { "Authorization": "Bearer " + admin.fullAccessToken });
+        const community = createCommunityResponse.assertSuccess();
+        const nonMembers = [];
+        for (let i = 0; i <= n; i++) {
+            nonMembers.push(await this.createUserWithFullAccessToken());
+        }
+        return {
+            admin,
+            community,
+            nonMembers
+        }
     }
     
 }

@@ -45,7 +45,7 @@ class UsersController implements BaseController {
     await ValidationHelper.validateRequestBody(createUserRequest);
     let user = createUserRequest.toNewUser();
     await ValidationHelper.validateEntity(user);
-    await this.userService.saveUser(user);
+    await this.userService.insertUser(user);
     user = user.removePrivateData();
     response.status(201);
     response.json(user);

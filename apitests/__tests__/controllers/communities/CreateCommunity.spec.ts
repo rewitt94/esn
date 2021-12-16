@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid";
+import faker from "faker";
 import dotenv from "dotenv";
 import { CreateCommunity } from "../../../src/endpoints/communities/CreateCommunity";
 import { TestDataSetup } from "../../../src/utils/TestDataSetup";
@@ -14,7 +15,7 @@ describe("Create Community", () => {
     it("Can create community", async () => {
 
         const testData = await TestDataSetup.createUserWithFullAccessToken();
-        const name = uuid();
+        const name = faker.company.companyName();
         (await createCommunity.makeRequest({ name },  {
             "Authorization": "Bearer " + testData.fullAccessToken
         })).assertSuccess();
@@ -24,7 +25,7 @@ describe("Create Community", () => {
     it("Can create communities with the same name", async () => {
 
         const testData = await TestDataSetup.createUserWithFullAccessToken();
-        const name = uuid();
+        const name = faker.company.companyName();
         (await createCommunity.makeRequest({ name },  {
             "Authorization": "Bearer " + testData.fullAccessToken
         })).assertSuccess();
@@ -34,38 +35,60 @@ describe("Create Community", () => {
 
     });
 
-    it("Cannot community user due to validation errors", async () => {
+    it("Cannot create community without access token", async () => {
 
+        const name = faker.company.companyName();
+
+        (await createCommunity.makeRequest({ name },  {
+            "Authorization": "Bearer my.jwt.token"
+        })).assertUnauthorizedError();
+
+        (await createCommunity.makeRequest({ name },  {
+            "Authorization": ""
+        })).assertUnauthorizedError();
+
+        (await createCommunity.makeRequest({ name },  {
+            "x-api-key": "mykey"
+        })).assertUnauthorizedError();
+
+    });
+
+    it("Cannot create community with initial access token", async () => {
+
+        const testData = await TestDataSetup.createUserAndLogin();
+        const name = faker.company.companyName();
+        (await createCommunity.makeRequest({ name },  {
+            "Authorization": "Bearer " + testData.initialAccessToken
+        })).assertForbbidenError();
+
+    });
+
+    it("Cannot create community user due to validation errors", async () => {
+
+        const testData = await TestDataSetup.createUserWithFullAccessToken();
         const invalidAttemps = [
             {
-                username: "",
-                password: "mysecretpassword123"
+                name: "a"
+            },
+            {
+                name: "mybigcommunity123mybigcommunity123mybigcommunity123mybigcommunity123mybigcommunity123"
             },
             {
                 username: uuid(),
-                password: "aaa"
             },
             {
-                username: uuid(),
-                password: "mysecretpassword123mysecretpassword123mysecretpassword123mysecretpassword123mysecretpassword123"
+                name: undefined
             },
             {
-                username: uuid(),
-                password: ""
-            },
-            {
-                username: undefined,
-                password: "mysecretpassword123"
-            },
-            {
-                username: uuid(),
-                password: undefined
+                name: 1 
             }
         ]
 
         for (const payload of invalidAttemps) {
             // @ts-ignore
-            (await createUser.makeRequest(payload)).assertValidationError();
+            (await createCommunity.makeRequest(payload,  {
+                "Authorization": "Bearer " + testData.fullAccessToken
+            })).assertValidationError();
         }
 
     });

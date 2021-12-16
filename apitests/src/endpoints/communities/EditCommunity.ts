@@ -2,23 +2,24 @@ import fetch from 'node-fetch';
 import { CommunityType } from '../../enums/CommunityType';
 import { HTTPEndpoint, HTTPApiMethodResponse } from "../../utils/HTTPAssertions";
 
-interface CreateCommunityResponse {
+interface EditCommunityResponse {
+    id: string;
     name: string,
-    communityType: CommunityType
-    id: string,
+    communityType?: CommunityType
     dateCreated: string,
 }
 
-interface CreateCommunityPayload {
+interface EditCommunityPayload {
+    id: string;
     name: string,
     communityType?: CommunityType
 };
 
-export class CreateCommunity extends HTTPEndpoint<CreateCommunityPayload, CreateCommunityResponse> {
+export class EditCommunity extends HTTPEndpoint<EditCommunityPayload, EditCommunityResponse> {
 
-    httpRequest = async (payload: CreateCommunityPayload, headers: object): Promise<HTTPApiMethodResponse<CreateCommunityResponse>> => {
+    httpRequest = async (payload: EditCommunityPayload, headers: object): Promise<HTTPApiMethodResponse<EditCommunityResponse>> => {
         const response = await fetch(process.env.BASE_URL + "/communities/", {
-            method: "POST",
+            method: "PUT",
             headers: Object.assign({
                 "Content-Type": "application/json"
             }, headers),
@@ -30,12 +31,11 @@ export class CreateCommunity extends HTTPEndpoint<CreateCommunityPayload, Create
         }
     }
 
-    assertSuccess = (statusCode: number, responseBody: CreateCommunityResponse, requestBody: CreateCommunityPayload): void => {
-        expect(statusCode).toEqual(201);
+    assertSuccess = (statusCode: number, responseBody: EditCommunityResponse, requestBody: EditCommunityPayload): void => {
+        expect(statusCode).toEqual(200);
         expect(responseBody.name).toEqual(requestBody.name);
         expect(responseBody.communityType).toEqual(requestBody.communityType);
         expect(responseBody.id).toMatch(/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/);
-        expect(responseBody.dateCreated).toMatch(/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/);
     }
         
 }

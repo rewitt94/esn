@@ -28,10 +28,10 @@ class NotificationService {
         return await this.notificationRepository.find({ where: { receiverId: userId } });
     }
 
-    saveNotification = async (notification: Notification): Promise<void> => {
+    insertNotification = async (notification: Notification): Promise<void> => {
         try {
             await ValidationHelper.validateEntity(notification);
-            await this.notificationRepository.save(notification);
+            await this.notificationRepository.insert(notification);
         } catch (err) {
             console.error("Notification is invalid")
         }
@@ -39,19 +39,19 @@ class NotificationService {
 
     sendAddFriendNotification = async (inviteeId: string, senderUserId: string): Promise<void> => {
         const notification = NotificationFactory.makeAddFriendNotification(inviteeId, senderUserId);
-        await this.saveNotification(notification);
+        await this.insertNotification(notification);
     }
 
     sendAcceptFriendNotification = async (inviteeId: string, acceptedUserId: string): Promise<void> => {
         const notification = NotificationFactory.makeAcceptFriendNotification(inviteeId, acceptedUserId);
-        await this.saveNotification(notification);
+        await this.insertNotification(notification);
     }
 
     sendCommunityEventNotficiations = async (communityId: string, eventId: string): Promise<void> => {
         const users = await this.communitityService.getCommunityMemberIds(communityId);
         const savePromises = users.map(async userId => {
             const notification = NotificationFactory.makeCommunityEventCreatedNotification(userId, communityId, eventId);
-            return this.saveNotification(notification);
+            return this.insertNotification(notification);
         });
         await Promise.all(savePromises).catch( err => { throw err });
     }
@@ -59,14 +59,14 @@ class NotificationService {
     sendEventInviteNotifications = async (eventId: string, invitees: string[], senderId: string): Promise<void> => {
         const savePromises = invitees.map(async invitee => {
             const notification = NotificationFactory.makeEventInviteNotification(invitee, senderId, eventId);
-            return this.saveNotification(notification);
+            return this.insertNotification(notification);
         });
         await Promise.all(savePromises).catch( err => { throw err });
     }
 
     sendEventAttendanceNotification = async (attendee: string , eventCreator: string, eventId: string): Promise<void> => {
         const notification = NotificationFactory.makeEventAttendanceNotification(attendee, eventCreator, eventId);
-        await this.saveNotification(notification);
+        await this.insertNotification(notification);
     }
 
     sendEventUpdateNotifications = async (event: Event): Promise<void> => {
@@ -78,7 +78,7 @@ class NotificationService {
         }
         const savePromises = userIds.map(async userId => {
             const notification = NotificationFactory.makeEventUpdateNotification(userId, event.creator, event.id);
-            return this.saveNotification(notification);
+            return this.insertNotification(notification);
         });
         await Promise.all(savePromises).catch( err => { throw err });
     }
@@ -86,7 +86,7 @@ class NotificationService {
     sendCommunityInviteNotifications = async (communityId: string, invitees: string[], senderId: string): Promise<void> => {
         const savePromises = invitees.map(async invitee => {
             const notification = NotificationFactory.makeCommunityInviteNotification(invitee, senderId, communityId);
-            return this.saveNotification(notification);
+            return this.insertNotification(notification);
         });
         await Promise.all(savePromises).catch( err => { throw err });
     }
@@ -95,7 +95,7 @@ class NotificationService {
         const communityAdminIds = await this.communitityService.getCommunityAdminIds(communityId);
         const savePromises = communityAdminIds.map(async adminId => {
             const notification = NotificationFactory.makeAcceptCommunityInviteNotification(userId, adminId, communityId);
-            return this.saveNotification(notification);
+            return this.insertNotification(notification);
         });
         await Promise.all(savePromises).catch( err => { throw err });
     }
@@ -104,7 +104,7 @@ class NotificationService {
         const communityMemberIds = await this.communitityService.getCommunityMemberIds(communityId);
         const savePromises = communityMemberIds.map(async memberId => {
             const notification = NotificationFactory.makeCommunityUpdateNotifications(userId, memberId, communityId);
-            return this.saveNotification(notification);
+            return this.insertNotification(notification);
         });
         await Promise.all(savePromises).catch( err => { throw err });
     }

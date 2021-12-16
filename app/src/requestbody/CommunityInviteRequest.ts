@@ -3,7 +3,7 @@ import { IsNotEmpty, IsOptional, IsUUID } from "class-validator";
 export default class CommunityInviteRequest {
 
     constructor(data: any) {
-        this.community = data.event!;
+        this.community = data.community!;
         this.invitees = data.invitees!;
     }
 

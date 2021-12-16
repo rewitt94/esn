@@ -31,6 +31,18 @@ describe("Create User", () => {
 
         const invalidAttemps = [
             {
+                username: uuid(),
+                password: 123
+            },
+            {
+                username: 123,
+                password: uuid()
+            },
+            {
+                username: ['hello'],
+                password: uuid()
+            },
+            {
                 username: "",
                 password: "mysecretpassword123"
             },

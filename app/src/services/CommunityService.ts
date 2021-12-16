@@ -55,12 +55,8 @@ class CommuntiyService {
         await this.communityRepository.update(community.id, community);
     }
 
-    saveCommunity = async (community: Community): Promise<void> => {
-        const existingCommunity = await this.communityRepository.findOne({ where: { id: community.id } });
-        if (!!existingCommunity) {
-            throw new HTTPError(ConflictStatus, 'saveCommunity - failed to save community being community already exists', { community });
-        }
-        await this.communityRepository.save(community);
+    insertCommunity = async (community: Community): Promise<void> => {
+        await this.communityRepository.insert(community);
     };
 
     getMembership = async (userId: string, communityId: string): Promise<Membership> => {

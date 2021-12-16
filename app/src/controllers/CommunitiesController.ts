@@ -6,7 +6,7 @@ import { HTTPHandler, initialiseRoute, validateFullAccessToken } from "../utils/
 import AuthService from '../services/AuthService';
 import CommunityService from '../services/CommunityService';
 import UserService from '../services/UserService';
-// import MappingEntityFactory from '../factories/MappingEntityFactory';
+import MappingEntityFactory from '../factories/MappingEntityFactory';
 import CommunityObject from '../requestbody/CommunityObject';
 import CreateCommunityRequest from '../requestbody/CreateCommunityRequest';
 import CommunityInviteRequest from '../requestbody/CommunityInviteRequest';
@@ -41,10 +41,10 @@ class CommunitiesController implements BaseController {
     await ValidationHelper.validateRequestBody(createCommunityRequest);
     const community = createCommunityRequest.toNewCommunity();
     await ValidationHelper.validateEntity(community);
-    // const userId = this.authService.getUserId(request);
-    // const adminMembership = MappingEntityFactory.makeAdminMembership(community.id, userId);
-    await this.communityService.saveCommunity(community);
-    // await this.communityService.saveMemberships([adminMembership]);
+    const userId = this.authService.getUserId(request);
+    const adminMembership = MappingEntityFactory.makeAdminMembership(community.id, userId);
+    await this.communityService.insertCommunity(community);
+    await this.communityService.saveMemberships([adminMembership]);
     response.status(201);
     response.json(community);
   }
@@ -53,7 +53,7 @@ class CommunitiesController implements BaseController {
     const updateCommunityRequest = new UpdateCommunityRequest(request.body);
     await ValidationHelper.validateRequestBody(updateCommunityRequest);
     const userId = this.authService.getUserId(request);
-    await this.authService.validateUserIsCommunityAdmin(userId, updateCommunityRequest.community);
+    await this.authService.validateUserIsCommunityAdmin(userId, updateCommunityRequest.id);
     const community = updateCommunityRequest.toCommunity();
     await this.communityService.updateCommunity(community);
     await this.notificationService.sendCommunityUpdateNotifications(userId, community.id);

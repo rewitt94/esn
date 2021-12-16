@@ -94,7 +94,7 @@ class EventsController implements BaseController {
     const event = createEventRequest.toNewEvent(userId);
     await ValidationHelper.validateEntity(event);
     await this.authService.validateMembership(userId, event.community)
-    await this.eventService.saveEvent(event);
+    await this.eventService.insertEvent(event);
     await this.notificationService.sendCommunityEventNotficiations(event.community, event.id);
     response.status(201);
     response.json(event);
@@ -108,11 +108,11 @@ class EventsController implements BaseController {
     await ValidationHelper.validateEntity(event);
     if (Array.isArray(createEventRequest.invitees) && createEventRequest.invitees.length) {
       await this.authService.validateInviteesAreFriends(userId, createEventRequest.invitees);
-      await this.eventService.saveEvent(event);
+      await this.eventService.insertEvent(event);
       await this.eventService.inviteUsersToEvent(event.id, createEventRequest.invitees);
       await this.notificationService.sendEventInviteNotifications(event.id, createEventRequest.invitees, userId)
     } else {
-      await this.eventService.saveEvent(event);
+      await this.eventService.insertEvent(event);
     }
     response.status(201);
     response.json(event);

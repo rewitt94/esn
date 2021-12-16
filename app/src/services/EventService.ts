@@ -101,12 +101,8 @@ class EventService {
         return attendances.map(attendance => attendance.user);
     }
 
-    saveEvent = async (event: Event): Promise<void> => {
-        const existingEvent = await this.eventRepository.findOne({ where: { id: event.id } });
-        if (!!existingEvent) {
-            throw new HTTPError(ConflictStatus, 'saveEvent - cannot save event because event id already exists', { existingEvent });
-        }
-        await this.eventRepository.save(event);
+    insertEvent = async (event: Event): Promise<void> => {
+        await this.eventRepository.insert(event);
     };
 
     updateEvent = async (event: Event): Promise<void> => {

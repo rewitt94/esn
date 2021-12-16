@@ -28,16 +28,12 @@ class UserService {
         return UserService.instance;
     };
 
-    saveUser = async (user: User): Promise<void> => {
-        let existingUser = await this.userRepository.findOne({ where: { username: user.username } });
+    insertUser = async (user: User): Promise<void> => {
+        const existingUser = await this.userRepository.findOne({ where: { username: user.username } });
         if (!!existingUser) {
-            throw new HTTPError(ConflictStatus, 'saveUser - cannot save user because username already exists', { existingUser });
+            throw new HTTPError(ConflictStatus, 'insertUser - cannot save user because username already exists', { existingUser });
         }
-        existingUser = await this.userRepository.findOne({ where: { id: user.id } });
-        if (!!existingUser) {
-            throw new HTTPError(ConflictStatus, 'saveUser - cannot save user because user id already exists', { existingUser });
-        }
-        await this.userRepository.save(user);
+        await this.userRepository.insert(user);
     };
 
     login = async (login: LoginRequest): Promise<User> => {
