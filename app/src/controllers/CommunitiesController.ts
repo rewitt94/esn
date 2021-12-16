@@ -65,6 +65,7 @@ class CommunitiesController implements BaseController {
     const communityInviteRequest = new CommunityInviteRequest(request.body);
     await ValidationHelper.validateRequestBody(communityInviteRequest);
     const userId = this.authService.getUserId(request);
+    console.log(communityInviteRequest)
     await this.authService.validateUserIsCommunityAdmin(userId, communityInviteRequest.community);
     await this.authService.validateInviteesAreFriends(userId, communityInviteRequest.invitees);
     await this.communityService.inviteUsersToCommunity(communityInviteRequest.community, communityInviteRequest.invitees);

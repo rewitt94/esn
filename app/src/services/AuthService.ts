@@ -149,7 +149,7 @@ class AuthService {
     }
 
     validateInviteesAreFriends = async (senderId: string, invitees: string[]): Promise<void> => {
-        for (const invitee in invitees) {
+        for (const invitee of invitees) {
             if (await this.userService.areFriends(senderId, invitee) === false) {
                 throw new HTTPError(ForbiddenStatus, 'validateInviteesAreFriends - users are not friends');
             }
