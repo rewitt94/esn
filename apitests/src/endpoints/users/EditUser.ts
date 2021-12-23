@@ -18,7 +18,7 @@ interface UserEdit {
 export class EditUser extends HTTPEndpoint<UserEdit, UserEditResponse> {
 
     httpRequest = async (userId: UserEdit, headers: object):  Promise<HTTPApiMethodResponse<UserEditResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/users/", {
+        const response = await fetch(process.env.BASE_URL! + "/users/", {
             method: "PUT",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -27,7 +27,7 @@ export class EditUser extends HTTPEndpoint<UserEdit, UserEditResponse> {
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as UserEditResponse
         }
     }
 
@@ -38,5 +38,5 @@ export class EditUser extends HTTPEndpoint<UserEdit, UserEditResponse> {
         expect(responseBody.lastName).toEqual(userEdit.lastName);
         expect(responseBody.dateOfBirth).toEqual(userEdit.dateOfBirth);
     }
-        
-};
+
+}

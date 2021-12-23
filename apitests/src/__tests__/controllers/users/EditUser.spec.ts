@@ -1,14 +1,14 @@
 import dotenv from "dotenv";
 import faker from "faker";
-import { EditUser } from "../../../src/endpoints/users/EditUser";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { EditUser } from "../../../endpoints/users/EditUser";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 describe("Edit User", () => {
 
     beforeAll(() => {
         dotenv.config();
     });
-    
+
     const editUser = new EditUser()
 
     it("Edit user returns success if authenticated", async () => {
@@ -92,6 +92,6 @@ describe("Edit User", () => {
         }
 
     });
-    
+
 
 });

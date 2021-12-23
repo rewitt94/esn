@@ -1,8 +1,8 @@
 import { v4 as uuid } from "uuid";
 import faker from "faker";
 import dotenv from "dotenv";
-import { CreateCommunity } from "../../../src/endpoints/communities/CreateCommunity";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { CreateCommunity } from "../../../endpoints/communities/CreateCommunity";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 describe("Create Community", () => {
 
@@ -80,7 +80,7 @@ describe("Create Community", () => {
                 name: undefined
             },
             {
-                name: 1 
+                name: 1
             }
         ]
 

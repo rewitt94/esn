@@ -8,12 +8,12 @@ interface CommunityInviteRequest {
 
 interface CommunityInviteResponse {
     message: string
-};
+}
 
 export class SendMembership extends HTTPEndpoint<CommunityInviteRequest, CommunityInviteResponse> {
 
     httpRequest = async (payload: CommunityInviteRequest, headers: object): Promise<HTTPApiMethodResponse<CommunityInviteResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/communities/membership", {
+        const response = await fetch(process.env.BASE_URL! + "/communities/membership", {
             method: "POST",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -22,13 +22,13 @@ export class SendMembership extends HTTPEndpoint<CommunityInviteRequest, Communi
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as CommunityInviteResponse
         }
     }
 
-    assertSuccess = (statusCode: number, responseBody: CommunityInviteResponse, requestBody: CommunityInviteRequest): void => {
+    assertSuccess = (statusCode: number, responseBody: CommunityInviteResponse): void => {
         expect(statusCode).toEqual(201);
         expect(responseBody.message).toEqual('Community invites sent');
     }
-        
+
 }

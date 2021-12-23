@@ -1,14 +1,14 @@
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import faker from "faker";
-import { GetUser } from "../../../src/endpoints/users/GetUser";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { GetUser } from "../../../endpoints/users/GetUser";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 describe("Get User", () => {
 
     beforeAll(() => {
         dotenv.config();
-    });    
+    });
 
     const getUser = new GetUser();
 
@@ -24,7 +24,7 @@ describe("Get User", () => {
             lastName: testData.lastName,
             dateOfBirth: testData.dateOfBirth,
         });
-    
+
     });
 
     it('Cannot get user with initial access token', async () => {
@@ -33,7 +33,7 @@ describe("Get User", () => {
         (await getUser.makeRequest(testData.id, {
             "Authorization": "Bearer " + testData.initialAccessToken
         })).assertForbbidenError();
-    
+
     });
 
     it('Can get user if authenticated & is friend', async () => {
@@ -115,7 +115,7 @@ describe("Get User", () => {
         (await getUser.makeRequest(otherUserTestData.id, {
             "Authorization": "Bearer " + userTestData.fullAccessToken
         })).assertForbbidenError();
-    
+
     });
 
     it('Cannot get user if authenticated & user does not exist', async () => {

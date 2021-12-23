@@ -73,11 +73,11 @@ export class TestDataSetup {
         const tokenAttempt = await token.makeRequest(undefined, {
             "Authorization": "Bearer " + userWithFullDetails.initialAccessToken
         })
-        const tokenResponse = await tokenAttempt.assertSuccess();
+        const tokenResponse = tokenAttempt.assertSuccess();
         return Object.assign(userWithFullDetails, {
             fullAccessToken: tokenResponse.accessToken
         });
-    };
+    }
 
     static async createUserWithPendingFriendRequest() {
         const user = await this.createUserWithFullAccessToken();
@@ -216,5 +216,5 @@ export class TestDataSetup {
             friendWithCommunityInvite: testData.nonMemberFriend
         }
     }
-    
+
 }

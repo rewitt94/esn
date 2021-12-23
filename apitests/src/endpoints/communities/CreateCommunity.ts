@@ -12,12 +12,12 @@ interface CreateCommunityResponse {
 interface CreateCommunityPayload {
     name: string,
     communityType?: CommunityType
-};
+}
 
 export class CreateCommunity extends HTTPEndpoint<CreateCommunityPayload, CreateCommunityResponse> {
 
     httpRequest = async (payload: CreateCommunityPayload, headers: object): Promise<HTTPApiMethodResponse<CreateCommunityResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/communities/", {
+        const response = await fetch(process.env.BASE_URL! + "/communities/", {
             method: "POST",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -26,7 +26,7 @@ export class CreateCommunity extends HTTPEndpoint<CreateCommunityPayload, Create
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as CreateCommunityResponse
         }
     }
 
@@ -37,5 +37,5 @@ export class CreateCommunity extends HTTPEndpoint<CreateCommunityPayload, Create
         expect(responseBody.id).toMatch(/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/);
         expect(responseBody.dateCreated).toMatch(/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/);
     }
-        
+
 }

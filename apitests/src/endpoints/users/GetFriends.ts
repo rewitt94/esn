@@ -13,7 +13,7 @@ interface UserInfo {
 export class GetFriends extends HTTPEndpoint<FriendshipStatus, UserInfo[], UserInfo[]> {
 
     httpRequest = async (friendshipStatus: FriendshipStatus, headers: object): Promise<HTTPApiMethodResponse<UserInfo[]>> => {
-        const response = await fetch(process.env.BASE_URL + "/users/friends?status=" + friendshipStatus, {
+        const response = await fetch(process.env.BASE_URL! + "/users/friends?status=" + friendshipStatus, {
             method: "GET",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -21,7 +21,7 @@ export class GetFriends extends HTTPEndpoint<FriendshipStatus, UserInfo[], UserI
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as UserInfo[]
         }
     }
 
@@ -32,5 +32,5 @@ export class GetFriends extends HTTPEndpoint<FriendshipStatus, UserInfo[], UserI
             expect(responseBody).toEqual(validationData);
         }
     }
-        
+
 }

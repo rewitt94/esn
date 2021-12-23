@@ -13,12 +13,12 @@ interface EditCommunityPayload {
     id: string;
     name: string,
     communityType?: CommunityType
-};
+}
 
 export class EditCommunity extends HTTPEndpoint<EditCommunityPayload, EditCommunityResponse> {
 
     httpRequest = async (payload: EditCommunityPayload, headers: object): Promise<HTTPApiMethodResponse<EditCommunityResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/communities/", {
+        const response = await fetch(process.env.BASE_URL! + "/communities/", {
             method: "PUT",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -27,7 +27,7 @@ export class EditCommunity extends HTTPEndpoint<EditCommunityPayload, EditCommun
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as EditCommunityResponse
         }
     }
 
@@ -37,5 +37,5 @@ export class EditCommunity extends HTTPEndpoint<EditCommunityPayload, EditCommun
         expect(responseBody.communityType).toEqual(requestBody.communityType);
         expect(responseBody.id).toMatch(/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/);
     }
-        
+
 }

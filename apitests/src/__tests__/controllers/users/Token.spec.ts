@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { Token } from "../../../src/endpoints/users/Token";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { Token } from "../../../endpoints/users/Token";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 describe("Token", () => {
 

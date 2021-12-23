@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
-import { SendMembership } from "../../../src/endpoints/communities/SendMembership";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { SendMembership } from "../../../endpoints/communities/SendMembership";
 
 describe("Send Membership", () => {
 
@@ -38,7 +38,7 @@ describe("Send Membership", () => {
 
     it("Member (Non-Admin) of a community cannot send memberships to friends", async () => {
 
-        throw new Error('accept membership not yet written');
+        await new Promise((_, rej) => rej(new Error('test not written')));
         // const testData = await TestDataSetup.createCommunityAdminAndCommunityAndMemberWithNonMemberFriend();
         // const payload = {
         //     community: testData.community.id,
@@ -53,7 +53,7 @@ describe("Send Membership", () => {
 
     it("Member (Non-Admin) of a community cannot send memberships non-friends", async () => {
 
-        throw new Error('accept membership not yet written');
+        await new Promise((_, rej) => rej(new Error('test not written')));
         // const testData = await TestDataSetup.createCommunityAdminAndCommunityAndMemberWithNonMemberFriend();
         // const payload = {
         //     community: testData.community.id,
@@ -138,7 +138,7 @@ describe("Send Membership", () => {
 
     it("Sending membership sends expected notification", async () => {
 
-        throw new Error('test not written');
+        await new Promise((_, rej) => rej(new Error('test not written')));
 
     });
 

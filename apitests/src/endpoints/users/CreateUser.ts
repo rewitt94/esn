@@ -16,7 +16,7 @@ interface CreateUserResponse {
 export class CreateUser extends HTTPEndpoint<CreateUserPayload, CreateUserResponse> {
 
     httpRequest = async (payload: CreateUserPayload):  Promise<HTTPApiMethodResponse<CreateUserResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/users", {
+        const response = await fetch(process.env.BASE_URL! + "/users", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -25,7 +25,7 @@ export class CreateUser extends HTTPEndpoint<CreateUserPayload, CreateUserRespon
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as CreateUserResponse
         }
     }
 
@@ -36,5 +36,5 @@ export class CreateUser extends HTTPEndpoint<CreateUserPayload, CreateUserRespon
         expect(responseBody.hashedPassword).toEqual(undefined);
         expect(responseBody.id).toMatch(/\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/);
     }
-        
+
 }

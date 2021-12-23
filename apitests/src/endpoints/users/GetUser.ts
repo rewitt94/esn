@@ -12,7 +12,7 @@ interface UserInfo {
 export class GetUser extends HTTPEndpoint<string, UserInfo, UserInfo> {
 
     httpRequest = async (userId: string, headers: object):  Promise<HTTPApiMethodResponse<UserInfo>> => {
-        const response = await fetch(process.env.BASE_URL + "/users/user/" + userId, {
+        const response = await fetch(process.env.BASE_URL! + "/users/user/" + userId, {
             method: "GET",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -20,14 +20,14 @@ export class GetUser extends HTTPEndpoint<string, UserInfo, UserInfo> {
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as UserInfo
         }
     }
 
     assertSuccess = (statusCode: number, responseBody: UserInfo, userId: string, validationData: UserInfo): void => {
         expect(statusCode).toEqual(200);
         expect(userId).toEqual(validationData.id);
-        
+
         // @ts-ignore
         expect(responseBody.dateCreated).toEqual(undefined);
         // @ts-ignore
@@ -39,5 +39,5 @@ export class GetUser extends HTTPEndpoint<string, UserInfo, UserInfo> {
         expect(responseBody.lastName).toMatch(validationData.lastName);
         expect(responseBody.dateOfBirth).toMatch(validationData.dateOfBirth);
     }
-        
+
 }

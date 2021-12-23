@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
-import { AcceptMembership } from "../../../src/endpoints/communities/AcceptMembership";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { AcceptMembership } from "../../../endpoints/communities/AcceptMembership";
 
 describe("Accept Membership", () => {
 
@@ -48,7 +48,7 @@ describe("Accept Membership", () => {
 
     it('Accepting membership invite sends expected notifications', async () => {
 
-        throw new Error('test not written');
+        await new Promise((_, rej) => rej(new Error('test not written')));
 
     });
 

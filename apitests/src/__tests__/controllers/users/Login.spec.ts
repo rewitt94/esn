@@ -1,8 +1,8 @@
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
-import { Login } from "../../../src/endpoints/users/Login";
-import { AccessTokenStatus } from "../../../src/enums/AccessTokenStatus";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { Login } from "../../../endpoints/users/Login";
+import { AccessTokenStatus } from "../../../enums/AccessTokenStatus";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 describe("Login", () => {
 

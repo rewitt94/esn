@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
 import faker from "faker";
-import { EditCommunity } from "../../../src/endpoints/communities/EditCommunity";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
-import { CommunityType } from "../../../src/enums/CommunityType";
+import { EditCommunity } from "../../../endpoints/communities/EditCommunity";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { CommunityType } from "../../../enums/CommunityType";
 
 describe("Edit Community", () => {
 
@@ -42,7 +42,7 @@ describe("Edit Community", () => {
 
     it('Non-Member of a community cannot edit community', async () => {
 
-        let testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMember();
+        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMember();
         const payload = {
             id: testData.community.id,
             name: faker.company.companyName()
@@ -55,8 +55,8 @@ describe("Edit Community", () => {
 
     it('Member (Non-Admin) of a community cannot edit community', async () => {
 
-        throw new Error('test to be written');
-        
+        await new Promise((_, rej) => rej(new Error('test not written')));
+
     });
 
     it("Cannot edit community without access token", async () => {
@@ -116,7 +116,7 @@ describe("Edit Community", () => {
                 id: testData.community.id,
                 name: "a"
             },
-            {   
+            {
                 id: testData.community.id,
                 name: "mybigcommunity123mybigcommunity123mybigcommunity123mybigcommunity123mybigcommunity123"
             },
@@ -134,7 +134,7 @@ describe("Edit Community", () => {
     });
 
     it('Editting a community sends a notification to members', async () => {
-        throw new Error('test to be written');
+        await new Promise((_, rej) => rej(new Error('test not written')));
     });
 
 

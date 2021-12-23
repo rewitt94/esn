@@ -2,7 +2,9 @@
     "name": "directo-apitests",
     "scripts": {
         "test": "jest --verbose",
-        "test:cov": "jest --verbose --coverage"
+        "test:cov": "jest --verbose --coverage",
+        "lint": "eslint -c .eslintrc.js --ext .ts ./src",
+        "lint:fix": "eslint -c .eslintrc.js --ext .ts --fix ./src"
     },
     "dependencies": {
         "dotenv": "8.2.0",
@@ -19,6 +21,11 @@
         "@types/node": "^14.14.14",
         "@types/node-fetch": "^2.5.7",
         "@types/uuid": "^8.3.3",
+        "@typescript-eslint/eslint-plugin": "^5.8.0",
+        "@typescript-eslint/parser": "^5.8.0",
+        "eslint": "^8.5.0",
+        "eslint-plugin-jsdoc": "^37.4.0",
+        "eslint-plugin-prefer-arrow": "^1.2.3",
         "jest": "26.4.2",
         "ts-jest": "26.4.4",
         "tslint": "^6.1.3",

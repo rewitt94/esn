@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
-import { CreateUser } from "../../../src/endpoints/users/CreateUser";
+import { CreateUser } from "../../../endpoints/users/CreateUser";
 
 describe("Create User", () => {
 

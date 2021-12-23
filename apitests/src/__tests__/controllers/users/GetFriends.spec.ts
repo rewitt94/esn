@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
-import { GetFriends } from "../../../src/endpoints/users/GetFriends";
-import { FriendshipStatus } from "../../../src/enums/FriendshipStatus";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { GetFriends } from "../../../endpoints/users/GetFriends";
+import { FriendshipStatus } from "../../../enums/FriendshipStatus";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 
 describe("Get Friends", () => {
@@ -115,11 +115,11 @@ describe("Get Friends", () => {
         (await getFriends.makeRequest(FriendshipStatus.REQUESTED, {
             "Authorization": "Bearer " + testData.user.initialAccessToken
         })).assertForbbidenError();
-    
+
     });
 
     it('Cannot get friends without full access token', async () => {
-        
+
         (await getFriends.makeRequest(FriendshipStatus.ACCEPTED, {
             "Authorization": "Bearer "
         })).assertUnauthorizedError();
@@ -153,7 +153,7 @@ describe("Get Friends", () => {
         (await getFriends.makeRequest("unknownStatus", {
             "Authorization": "Bearer " + user.fullAccessToken
         })).assertValidationError()
-        
+
     });
 
 });

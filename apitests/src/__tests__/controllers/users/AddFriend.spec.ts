@@ -1,13 +1,13 @@
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
-import { AddFriend } from "../../../src/endpoints/users/AddFriend";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
+import { AddFriend } from "../../../endpoints/users/AddFriend";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
 
 describe("Add Friend", () => {
 
     beforeAll(() => {
         dotenv.config();
-    }); 
+    });
 
     const addFriend = new AddFriend()
 
@@ -88,7 +88,7 @@ describe("Add Friend", () => {
 
     });
 
-    
+
     it("Cannot add friend if user doesn't exists", async () => {
 
         const userTestData = await TestDataSetup.createUserWithFullAccessToken();
@@ -96,7 +96,7 @@ describe("Add Friend", () => {
             { username: uuid() },
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
         )).assertForbbidenError();
-        
+
     });
 
     it("Cannot add friend if username is invalid", async () => {
@@ -115,13 +115,13 @@ describe("Add Friend", () => {
                 { "Authorization": "Bearer " + userTestData.fullAccessToken }
             )).assertValidationError();
         }
-        
+
     });
 
 
     it("Add friend triggers expected notifications", async () => {
 
-        throw new Error('test to be written')
+        await new Promise((_, rej) => rej(new Error('test not written')));
 
     });
 

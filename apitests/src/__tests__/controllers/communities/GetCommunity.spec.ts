@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { TestDataSetup } from "../../../src/utils/TestDataSetup";
-import { GetCommunity } from "../../../src/endpoints/communities/GetCommunity";
+import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { GetCommunity } from "../../../endpoints/communities/GetCommunity";
 
 describe("Get Community", () => {
 
@@ -22,11 +22,11 @@ describe("Get Community", () => {
         });
 
     });
-    
+
     it('Member (Non-Admin) of a community can get community', async () => {
 
-        throw new Error('test to be written');
-        
+        await new Promise((_, rej) => rej(new Error('test not written')));
+
     });
 
     it("Get community returns latest community details", async () => {
@@ -44,7 +44,7 @@ describe("Get Community", () => {
 
     it('Non-Member without membership of a community cannot get community', async () => {
 
-        let testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMember();
+        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMember();
         (await getCommunity.makeRequest(testData.community.id, {
             "Authorization": "Bearer " + testData.nonMember.fullAccessToken
         })).assertForbbidenError();
@@ -57,7 +57,7 @@ describe("Get Community", () => {
         (await getCommunity.makeRequest(testData.community.id, {
             "Authorization": "Bearer " + testData.admin.initialAccessToken
         })).assertForbbidenError();
-    
+
     });
 
     it('Cannot get community without access token', async () => {
@@ -74,7 +74,7 @@ describe("Get Community", () => {
         (await getCommunity.makeRequest(testData.community.id, {
             "x-api-key": "mykey"
         })).assertUnauthorizedError();
-    
+
     });
 
     it('Get community must send uuid', async () => {

@@ -9,12 +9,12 @@ interface AcceptFriendResponse {
 interface AcceptFriendPayload {
     username: string,
     status: FriendshipStatus
-};
+}
 
 export class AcceptFriend extends HTTPEndpoint<AcceptFriendPayload, AcceptFriendResponse> {
 
     httpRequest = async (payload: AcceptFriendPayload, headers: object): Promise<HTTPApiMethodResponse<AcceptFriendResponse>> => {
-        const response = await fetch(process.env.BASE_URL + "/users/friends", {
+        const response = await fetch(process.env.BASE_URL! + "/users/friends", {
             method: "PUT",
             headers: Object.assign({
                 "Content-Type": "application/json"
@@ -23,7 +23,7 @@ export class AcceptFriend extends HTTPEndpoint<AcceptFriendPayload, AcceptFriend
         }).catch((err) => { throw err });
         return {
             statusCode: response.status,
-            responseBody: await response.json().catch((err) => { throw err })
+            responseBody: await response.json().catch((err) => { throw err }) as AcceptFriendResponse
         }
     }
 
@@ -31,5 +31,5 @@ export class AcceptFriend extends HTTPEndpoint<AcceptFriendPayload, AcceptFriend
         expect(statusCode).toEqual(200);
         expect(responseBody.message).toEqual('Friend request accepted');
     }
-        
+
 }
