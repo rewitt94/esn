@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { TestDataSetup } from "../../../src/utils/TestDataSetup";
 import { GetCommunity } from "../../../src/endpoints/communities/GetCommunity";
 
-describe("Create Community", () => {
+describe("Get Community", () => {
 
     const getCommunity = new GetCommunity();
 
@@ -23,7 +23,7 @@ describe("Create Community", () => {
 
     });
     
-    it('Member (Non-Admin) member of a community can get community', async () => {
+    it('Member (Non-Admin) of a community can get community', async () => {
 
         throw new Error('test to be written');
         

@@ -137,17 +137,14 @@ class UserService {
     };
 
     areFriends = async (userOne: string, userTwo: string): Promise<boolean> => {
-        console.log({ userOne, userTwo })
         let friendship = await this.friendRepository.findOne({ where: { userOne, userTwo } });
         if (friendship?.FriendshipStatus === FriendshipStatus.ACCEPTED) {
             return true;
         }
-        console.log(friendship)
         friendship = await this.friendRepository.findOne({ where: { userOne: userTwo, userTwo: userOne } });
         if (friendship?.FriendshipStatus === FriendshipStatus.ACCEPTED) {
             return true;
         }
-        console.log(friendship)
         return false;
     }
 

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsUUID } from "class-validator";
+import { IsArray, IsNotEmpty, IsUUID } from "class-validator";
 
 export default class CommunityInviteRequest {
 
@@ -11,7 +11,7 @@ export default class CommunityInviteRequest {
     @IsUUID("4")
     community: string;
 
-    @IsOptional()
+    @IsArray()
     @IsUUID("4", { each: true })
     invitees: string[];
 

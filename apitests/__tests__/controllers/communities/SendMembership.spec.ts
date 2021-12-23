@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { TestDataSetup } from "../../../src/utils/TestDataSetup";
 import { SendMembership } from "../../../src/endpoints/communities/SendMembership";
 
-describe("Create Community", () => {
+describe("Send Membership", () => {
 
     const sendMembership = new SendMembership();
 
@@ -12,10 +12,10 @@ describe("Create Community", () => {
 
     it("Admin can send memberships to friends", async () => {
 
-        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMember();
+        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMemberFriend();
         const payload = {
             community: testData.community.id,
-            invitees: [testData.nonMember.id]
+            invitees: [testData.nonMemberFriend.id]
         };
         (await sendMembership.makeRequest(payload,  {
             "Authorization": "Bearer " + testData.admin.fullAccessToken
@@ -32,7 +32,107 @@ describe("Create Community", () => {
         };
         (await sendMembership.makeRequest(payload,  {
             "Authorization": "Bearer " + testData.admin.fullAccessToken
-        })).assertSuccess();
+        })).assertForbbidenError();
+
+    });
+
+    it("Member (Non-Admin) of a community cannot send memberships to friends", async () => {
+
+        throw new Error('accept membership not yet written');
+        // const testData = await TestDataSetup.createCommunityAdminAndCommunityAndMemberWithNonMemberFriend();
+        // const payload = {
+        //     community: testData.community.id,
+        //     invitees: [testData.nonMemberFriend.id]
+        // };
+        // (await sendMembership.makeRequest(payload,  {
+        //     "Authorization": "Bearer " + testData.memberWithNonMemberFriend.fullAccessToken
+        // })).assertForbbidenError();
+
+    });
+
+
+    it("Member (Non-Admin) of a community cannot send memberships non-friends", async () => {
+
+        throw new Error('accept membership not yet written');
+        // const testData = await TestDataSetup.createCommunityAdminAndCommunityAndMemberWithNonMemberFriend();
+        // const payload = {
+        //     community: testData.community.id,
+        //     invitees: [testData.nonMemberFriend.id]
+        // };
+        // (await sendMembership.makeRequest(payload,  {
+        //     "Authorization": "Bearer " + testData.memberWithNonMemberFriend.fullAccessToken
+        // })).assertForbbidenError();
+
+    });
+
+    it("Cannot send membership with initial access token", async () => {
+
+        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMemberFriend();
+        const payload = {
+            community: testData.community.id,
+            invitees: [testData.nonMemberFriend.id]
+        };
+        (await sendMembership.makeRequest(payload,  {
+            "Authorization": "Bearer " + testData.admin.initialAccessToken
+        })).assertForbbidenError();
+
+    });
+
+    it("Cannot send membership with without access token", async () => {
+
+        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMemberFriend();
+        const payload = {
+            community: testData.community.id,
+            invitees: [testData.nonMemberFriend.id]
+        };
+        (await sendMembership.makeRequest(payload, {
+            "Authorization": "Bearer my.jwt.token"
+        })).assertUnauthorizedError();
+
+        (await sendMembership.makeRequest(payload, {
+            "Authorization": ""
+        })).assertUnauthorizedError();
+
+        (await sendMembership.makeRequest(payload, {
+            "x-api-key": "mykey"
+        })).assertUnauthorizedError();
+
+    });
+
+    it("Cannot edit community user due to validation errors", async () => {
+
+        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMemberFriend();
+        const invalidAttemps = [
+            1,
+            'string',
+            {
+                community: 1,
+                invitees: [testData.nonMemberFriend.id]
+            },
+            {
+                community: testData.community.id,
+                invitees: testData.nonMemberFriend.id
+            },
+            {
+                community: testData.community.id,
+                invitees: 1
+            },
+            {
+                community: 'not a uuid',
+                invitees: [testData.nonMemberFriend.id]
+            },
+            {
+                community: 'not a uuid',
+                invitees: ['not a uuid']
+            }
+        ];
+        for (const attempt of invalidAttemps) {
+            // @ts-ignore
+            (await sendMembership.makeRequest(attempt,  {
+                "Authorization": "Bearer " + testData.admin.fullAccessToken
+            })).assertValidationError();
+        }
+
 
     });
 
