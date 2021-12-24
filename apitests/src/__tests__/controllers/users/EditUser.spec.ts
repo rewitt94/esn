@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import faker from "faker";
 import { EditUser } from "../../../endpoints/users/EditUser";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 
 describe("Edit User", () => {
 
@@ -13,7 +13,7 @@ describe("Edit User", () => {
 
     it("Edit user returns success if authenticated", async () => {
 
-        const testData = await TestDataSetup.createUserAndLogin();
+        const testData = await UniqueTestDataSetup.createUserAndLogin();
         (await editUser.makeRequest({
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
@@ -53,7 +53,7 @@ describe("Edit User", () => {
 
     it("Cannot edit user due to validation errors", async () => {
 
-        const testData = await TestDataSetup.createUserAndLogin();
+        const testData = await UniqueTestDataSetup.createUserAndLogin();
         const invalidAttemps = [
             {
                 firstName: "",

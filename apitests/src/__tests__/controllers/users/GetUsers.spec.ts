@@ -2,7 +2,7 @@ import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import faker from "faker";
 import { GetUser } from "../../../endpoints/users/GetUser";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 
 describe("Get User", () => {
 
@@ -14,7 +14,7 @@ describe("Get User", () => {
 
     it('Can get user if authenticated & is self', async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await getUser.makeRequest(testData.id, {
             "Authorization": "Bearer " + testData.fullAccessToken
         })).assertSuccess({
@@ -29,7 +29,7 @@ describe("Get User", () => {
 
     it('Cannot get user with initial access token', async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await getUser.makeRequest(testData.id, {
             "Authorization": "Bearer " + testData.initialAccessToken
         })).assertForbbidenError();
@@ -38,7 +38,7 @@ describe("Get User", () => {
 
     it('Can get user if authenticated & is friend', async () => {
 
-        const testData = await TestDataSetup.createUsersWhoAreFriends();
+        const testData = await UniqueTestDataSetup.createUsersWhoAreFriends();
 
         (await getUser.makeRequest(testData.otherUser.id, {
             "Authorization": "Bearer " + testData.user.fullAccessToken
@@ -65,7 +65,7 @@ describe("Get User", () => {
 
     it('Can get user if authenticated & has friend request from user', async () => {
 
-        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        const testData = await UniqueTestDataSetup.createUserWithPendingFriendRequest();
         (await getUser.makeRequest(testData.otherUser.id, {
             "Authorization": "Bearer " + testData.user.fullAccessToken
         })).assertSuccess({
@@ -80,7 +80,7 @@ describe("Get User", () => {
 
     it('Validation error if user id is not uuid', async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await getUser.makeRequest(faker.name.findName(), {
             "Authorization": "Bearer " + testData.fullAccessToken
         })).assertValidationError();
@@ -89,7 +89,7 @@ describe("Get User", () => {
 
     it('Cannot get user if unauthenticated', async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
 
         (await getUser.makeRequest(testData.id, { "Authorization": "Bearer "})).assertUnauthorizedError();
 
@@ -101,7 +101,7 @@ describe("Get User", () => {
 
     it('Cannot get user if authenticated & has sent friend request to user', async () => {
 
-        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        const testData = await UniqueTestDataSetup.createUserWithPendingFriendRequest();
         (await getUser.makeRequest(testData.user.username, {
             "Authorization": "Bearer " + testData.otherUser.fullAccessToken
         })).assertForbbidenError();
@@ -110,8 +110,8 @@ describe("Get User", () => {
 
     it('Cannot get user if authenticated & are not friends', async () => {
 
-        const userTestData = await TestDataSetup.createUserWithFullAccessToken();
-        const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const userTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
+        const otherUserTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await getUser.makeRequest(otherUserTestData.id, {
             "Authorization": "Bearer " + userTestData.fullAccessToken
         })).assertForbbidenError();
@@ -120,7 +120,7 @@ describe("Get User", () => {
 
     it('Cannot get user if authenticated & user does not exist', async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await getUser.makeRequest(uuid(), {
             "Authorization": "Bearer " + testData.fullAccessToken
         })).assertForbbidenError();

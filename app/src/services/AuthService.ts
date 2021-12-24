@@ -158,7 +158,7 @@ class AuthService {
 
     validateUserIsCommunityAdmin = async (userId: string, communityId: string): Promise<void> => {
         const membership = await this.communitityService.getMembership(userId, communityId);
-        if (membership.MembershipStatus === MembershipStatus.ADMIN) {
+        if (membership.membershipStatus === MembershipStatus.ADMIN) {
             return;
         }
         throw new HTTPError(ForbiddenStatus, 'validateUserIsCommunityAdmin - user is not community admin');
@@ -174,7 +174,7 @@ class AuthService {
 
     validateMembership = async (userdId: string, communityId: string): Promise<void> => {
         const membership = await this.communitityService.getMembership(userdId, communityId);
-        if (membership.MembershipStatus === MembershipStatus.MEMBER || membership.MembershipStatus === MembershipStatus.ADMIN) {
+        if (membership.membershipStatus === MembershipStatus.MEMBER || membership.membershipStatus === MembershipStatus.ADMIN) {
             return;
         }
         throw new HTTPError(ForbiddenStatus, 'validateMembership - user is not member of community');

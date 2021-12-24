@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { CommunityType } from '../../enums/CommunityType';
-import { HTTPEndpoint, HTTPApiMethodResponse } from "../../utils/HTTPAssertions";
+import { CommunityType } from '../../models/enums/CommunityType';
+import { HTTPEndpoint, HTTPApiMethodResponse } from "../HTTPAssertions";
 
 interface CommunityInfo {
     id: string;

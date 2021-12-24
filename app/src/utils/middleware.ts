@@ -45,9 +45,10 @@ export const wrapHandler = (httpMethod: HTTPMethods, controllerPath: string, res
                 logger.access(`${httpMethod} ${controllerPath}${resourcePath} ${err.statusCode}`)
                 return
             }
+            const unhandledError = err as Error
             response.status(ServerErrorStatus.statusCode)
             response.json({ error: ServerErrorStatus.publicErrorMessage });
-            logger.error(JSON.stringify(err));
+            logger.error(`${unhandledError.message}\n${unhandledError.stack}`);
             logger.access(`${httpMethod} ${controllerPath}${resourcePath} ${ServerErrorStatus.statusCode}`)
             return
         }

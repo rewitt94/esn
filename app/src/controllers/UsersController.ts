@@ -112,19 +112,19 @@ class UsersController implements BaseController {
     logger.info('addFriend - attempting to add friend', { senderUserId, inviteeId })
     await this.userService.addFriend(inviteeId, senderUserId, logger);
     logger.info('addFriend - friend request sent, attempting to send notifications')
-    await this.notificationService.sendAddFriendNotification(inviteeId, senderUserId);
+    await this.notificationService.sendAddFriendNotification(inviteeId, senderUserId, logger);
     response.status(201);
     response.json({ message: "Friend request sent" });
   }
 
-  acceptFriend: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  acceptFriend: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const acceptFriendshipRequest = new AcceptFriendshipRequest(request.body);
     await ValidationHelper.validateRequestBody(acceptFriendshipRequest);
     const { username } = acceptFriendshipRequest;
     const acceptedUserId = await this.userService.usernameToId(username);
     const inviteeId = this.authService.getUserId(request);
     await this.userService.acceptFriend(inviteeId, acceptedUserId);
-    await this.notificationService.sendAcceptFriendNotification(inviteeId, acceptedUserId);
+    await this.notificationService.sendAcceptFriendNotification(inviteeId, acceptedUserId, logger);
     response.status(200);
     response.json({ message: "Friend request accepted" });
   }

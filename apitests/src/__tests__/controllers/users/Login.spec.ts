@@ -1,8 +1,8 @@
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { Login } from "../../../endpoints/users/Login";
-import { AccessTokenStatus } from "../../../enums/AccessTokenStatus";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { AccessTokenStatus } from "../../../models/enums/AccessTokenStatus";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 
 describe("Login", () => {
 
@@ -14,14 +14,14 @@ describe("Login", () => {
 
     it("Login returns initial access token if user details are not populated", async () => {
 
-        const testData = await TestDataSetup.createUser();
+        const testData = await UniqueTestDataSetup.createUser();
         (await login.makeRequest(testData, {})).assertSuccess(AccessTokenStatus.INTIAL);
 
     });
 
     it("Login returns full access token if user details are populated", async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await login.makeRequest({ username: testData.username, password: testData.password }, {})).assertSuccess(AccessTokenStatus.FULL);
 
     });
@@ -37,7 +37,7 @@ describe("Login", () => {
 
     it("Login returns unauthorized if password is wrong", async () => {
 
-        const testData = await TestDataSetup.createUser();
+        const testData = await UniqueTestDataSetup.createUser();
         const payload = { username: testData.username, password: uuid() };
         (await login.makeRequest(payload, {})).assertUnauthorizedError();
 
@@ -45,7 +45,7 @@ describe("Login", () => {
 
     it("Login returns unauthorized if username is wrong", async () => {
 
-        const testData = await TestDataSetup.createUser();
+        const testData = await UniqueTestDataSetup.createUser();
         const payload = { username: uuid(), password: testData.password };
         (await login.makeRequest(payload, {})).assertUnauthorizedError();
 

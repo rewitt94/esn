@@ -4,6 +4,7 @@ import { HTTPMethods } from '../enums/HTTPMethods';
 import { initialiseRoute, validateFullAccessToken, HTTPHandler } from "../utils/middleware"
 import NotificationService from '../services/NotificationService';
 import AuthService from '../services/AuthService';
+import Logger from '../utils/Logger';
 
 class NotificationsController implements BaseController {
 
@@ -20,11 +21,11 @@ class NotificationsController implements BaseController {
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getNotifications);
   }
 
-  getNotifications: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  getNotifications: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const userId = this.authService.getUserId(request);
-    const notifications = this.notificationService.getNotifcationsForUser(userId);
+    const notifications = await this.notificationService.getNotifcationsForUser(userId, logger);
     response.status(200);
-    response.json(notifications);
+    response.json(notifications.sort((a, b) => new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime()));
   }
 
 }

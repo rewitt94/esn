@@ -12,6 +12,7 @@ import CreateCommunityRequest from '../requestbody/CreateCommunityRequest';
 import CommunityInviteRequest from '../requestbody/CommunityInviteRequest';
 import NotificationService from '../services/NotificationService';
 import UpdateCommunityRequest from '../requestbody/UpdateCommunityRequest';
+import Logger from '../utils/Logger';
 
 class CommunitiesController implements BaseController {
 
@@ -49,44 +50,44 @@ class CommunitiesController implements BaseController {
     response.json(community);
   }
 
-  editCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  editCommunity: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const updateCommunityRequest = new UpdateCommunityRequest(request.body);
     await ValidationHelper.validateRequestBody(updateCommunityRequest);
     const userId = this.authService.getUserId(request);
     await this.authService.validateUserIsCommunityAdmin(userId, updateCommunityRequest.id);
     const community = updateCommunityRequest.toCommunity();
     await this.communityService.updateCommunity(community);
-    await this.notificationService.sendCommunityUpdateNotifications(userId, community.id);
+    await this.notificationService.sendCommunityUpdateNotifications(userId, community.id, logger);
     response.status(200);
     response.json(community);
   }
 
-  inviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  inviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const communityInviteRequest = new CommunityInviteRequest(request.body);
     await ValidationHelper.validateRequestBody(communityInviteRequest);
     const userId = this.authService.getUserId(request);
     await this.authService.validateUserIsCommunityAdmin(userId, communityInviteRequest.community);
     await this.authService.validateInviteesAreFriends(userId, communityInviteRequest.invitees);
     await this.communityService.inviteUsersToCommunity(communityInviteRequest.community, communityInviteRequest.invitees);
-    await this.notificationService.sendCommunityInviteNotifications(communityInviteRequest.community, communityInviteRequest.invitees, userId);
+    await this.notificationService.sendCommunityInviteNotifications(communityInviteRequest.community, communityInviteRequest.invitees, userId, logger);
     response.status(201);
     response.json({ message: "Community invites sent" });
   }
 
-  acceptInviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  acceptInviteToCommunity: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const communityObject = new CommunityObject(request.body);
     await ValidationHelper.validateRequestBody(communityObject);
     const { community } = communityObject;
     const userId = this.authService.getUserId(request);
     await this.communityService.acceptMembership(userId, community);
-    await this.notificationService.sendAcceptCommunityNotification(userId, community);
+    await this.notificationService.sendAcceptCommunityNotification(userId, community, logger);
     response.status(200);
     response.json({ message: "Community invite accepted" });
   }
 
-  getCommunities: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  getCommunities: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const userId = this.authService.getUserId(request);
-    const communities = await this.communityService.getCommunitiesForUser(userId);
+    const communities = await this.communityService.getCommunitiesForUser(userId, logger);
     response.status(200);
     response.json(communities);
   }
@@ -102,7 +103,7 @@ class CommunitiesController implements BaseController {
   }
 
   getCommunityMembers: HTTPHandler = async (request: express.Request, response: express.Response) => {
-    const eventId = request.params.eventId;
+    const eventId = request.params.communityId;
     ValidationHelper.validateUuid(eventId);
     const requestingUser = this.authService.getUserId(request);
     await this.authService.validateCommunityIsVisible(requestingUser, eventId);
@@ -110,18 +111,16 @@ class CommunitiesController implements BaseController {
     const promises = memberships.map(async membership => {
       const user = await this.userService.getUser(membership.user);
       return {
-        userId: user.id,
+        id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
-        membership: membership.MembershipStatus,
+        membership: membership.membershipStatus,
       };
     })
     const members = await Promise.all(promises);
     response.status(200);
     response.json(members);
   }
-
-
 
 }
 

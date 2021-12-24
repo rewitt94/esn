@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { HTTPEndpoint, HTTPApiMethodResponse } from "../../utils/HTTPAssertions";
+import { HTTPEndpoint, HTTPApiMethodResponse } from "../HTTPAssertions";
 
 interface AddFriendResponse {
     message: string

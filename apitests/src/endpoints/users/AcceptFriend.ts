@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { FriendshipStatus } from '../../enums/FriendshipStatus';
-import { HTTPEndpoint, HTTPApiMethodResponse } from "../../utils/HTTPAssertions";
+import { FriendshipStatus } from '../../models/enums/FriendshipStatus';
+import { HTTPEndpoint, HTTPApiMethodResponse } from "../HTTPAssertions";
 
 interface AcceptFriendResponse {
     message: string

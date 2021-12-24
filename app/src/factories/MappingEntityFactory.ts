@@ -11,7 +11,7 @@ export default class MappingEntityFactory {
     static makeAdminMembership(communityId: string, userId: string): Membership {
         const membership = new Membership();
         membership.id = uuid();
-        membership.MembershipStatus = MembershipStatus.ADMIN;
+        membership.membershipStatus = MembershipStatus.ADMIN;
         membership.user = userId;
         membership.community = communityId;
         return membership;
@@ -20,7 +20,7 @@ export default class MappingEntityFactory {
     static makeInvitedMembership(communityId: string, userId: string): Membership {
         const membership = new Membership();
         membership.id = uuid();
-        membership.MembershipStatus = MembershipStatus.INVITED;
+        membership.membershipStatus = MembershipStatus.INVITED;
         membership.user = userId;
         membership.community = communityId;
         return membership;

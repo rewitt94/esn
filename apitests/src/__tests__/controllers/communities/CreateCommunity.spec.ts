@@ -2,7 +2,7 @@ import { v4 as uuid } from "uuid";
 import faker from "faker";
 import dotenv from "dotenv";
 import { CreateCommunity } from "../../../endpoints/communities/CreateCommunity";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 
 describe("Create Community", () => {
 
@@ -14,7 +14,7 @@ describe("Create Community", () => {
 
     it("Can create community", async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         const name = faker.company.companyName();
         (await createCommunity.makeRequest({ name },  {
             "Authorization": "Bearer " + testData.fullAccessToken
@@ -24,7 +24,7 @@ describe("Create Community", () => {
 
     it("Can create communities with the same name", async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         const name = faker.company.companyName();
         (await createCommunity.makeRequest({ name },  {
             "Authorization": "Bearer " + testData.fullAccessToken
@@ -55,7 +55,7 @@ describe("Create Community", () => {
 
     it("Cannot create community with initial access token", async () => {
 
-        const testData = await TestDataSetup.createUserAndLogin();
+        const testData = await UniqueTestDataSetup.createUserAndLogin();
         const name = faker.company.companyName();
         (await createCommunity.makeRequest({ name },  {
             "Authorization": "Bearer " + testData.initialAccessToken
@@ -65,7 +65,7 @@ describe("Create Community", () => {
 
     it("Cannot create community user due to validation errors", async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         const invalidAttemps = [
             {
                 name: "a"

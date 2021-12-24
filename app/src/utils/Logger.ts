@@ -19,6 +19,11 @@ export default class Logger {
         console.log(data)
     }
 
+    warn(text: string, object?: object) {
+        const data = this.getData('WARN', text, object)
+        console.log(data)
+    }
+
     error(text: string, object?: object) {
         const data = this.getData('ERROR', text, object)
         console.log(data)

@@ -13,7 +13,7 @@ export default class Membership {
     @IsNotEmpty()
     @IsEnum(MembershipStatus)
     @Column()
-    MembershipStatus: MembershipStatus;
+    membershipStatus: MembershipStatus;
 
     @IsNotEmpty()
     @IsUUID("4")

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 import { GetCommunity } from "../../../endpoints/communities/GetCommunity";
 
 describe("Get Community", () => {
@@ -12,7 +12,7 @@ describe("Get Community", () => {
 
     it("Admin can get community", async () => {
 
-        const testData = await TestDataSetup.createCommunityAdminAndCommunity();
+        const testData = await UniqueTestDataSetup.createCommunityAdminAndCommunity();
         (await getCommunity.makeRequest(testData.community.id,  {
             "Authorization": "Bearer " + testData.admin.fullAccessToken
         })).assertSuccess({
@@ -25,13 +25,20 @@ describe("Get Community", () => {
 
     it('Member (Non-Admin) of a community can get community', async () => {
 
-        await new Promise((_, rej) => rej(new Error('test not written')));
+        const testData = await UniqueTestDataSetup.createCommunityAndWithAdminAndMember();
+        (await getCommunity.makeRequest(testData.community.id,  {
+            "Authorization": "Bearer " + testData.member.fullAccessToken
+        })).assertSuccess({
+            id: testData.community.id,
+            name: testData.community.name,
+            communityType: testData.community.communityType,
+        });
 
     });
 
     it("Get community returns latest community details", async () => {
 
-        const testData = await TestDataSetup.createCommunityWithAdminAndEditCommunity();
+        const testData = await UniqueTestDataSetup.createCommunityWithAdminAndEditCommunity();
         (await getCommunity.makeRequest(testData.community.id,  {
             "Authorization": "Bearer " + testData.admin.fullAccessToken
         })).assertSuccess({
@@ -44,7 +51,7 @@ describe("Get Community", () => {
 
     it('Non-Member without membership of a community cannot get community', async () => {
 
-        const testData = await TestDataSetup.createCommunityAdminAndCommunityAndNonMember();
+        const testData = await UniqueTestDataSetup.createCommunityAdminAndCommunityAndNonMember();
         (await getCommunity.makeRequest(testData.community.id, {
             "Authorization": "Bearer " + testData.nonMember.fullAccessToken
         })).assertForbbidenError();
@@ -53,7 +60,7 @@ describe("Get Community", () => {
 
     it('Cannot get community with initial access token', async () => {
 
-        const testData = await TestDataSetup.createCommunityAdminAndCommunity();
+        const testData = await UniqueTestDataSetup.createCommunityAdminAndCommunity();
         (await getCommunity.makeRequest(testData.community.id, {
             "Authorization": "Bearer " + testData.admin.initialAccessToken
         })).assertForbbidenError();
@@ -62,7 +69,7 @@ describe("Get Community", () => {
 
     it('Cannot get community without access token', async () => {
 
-        const testData = await TestDataSetup.createCommunityAdminAndCommunity();
+        const testData = await UniqueTestDataSetup.createCommunityAdminAndCommunity();
         (await getCommunity.makeRequest(testData.community.id, {
             "Authorization": "Bearer my.jwt.token"
         })).assertUnauthorizedError();
@@ -79,7 +86,7 @@ describe("Get Community", () => {
 
     it('Get community must send uuid', async () => {
 
-        const testData = await TestDataSetup.createUserWithFullAccessToken();
+        const testData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         // @ts-ignore
         (await getCommunity.makeRequest(1, {
             "Authorization": "Bearer " + testData.fullAccessToken

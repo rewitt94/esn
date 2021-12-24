@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import { Token } from "../../../endpoints/users/Token";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 
 describe("Token", () => {
 
@@ -12,7 +12,7 @@ describe("Token", () => {
 
     it('returns full access token if when conditions are met', async () => {
 
-        const testData = await TestDataSetup.createUserLoginAndAddDetails();
+        const testData = await UniqueTestDataSetup.createUserLoginAndAddDetails();
         (await token.makeRequest(undefined, {
             "Authorization": "Bearer " + testData.initialAccessToken
         })).assertSuccess();
@@ -21,7 +21,7 @@ describe("Token", () => {
 
     it('returns an error if user has not populated details', async () => {
 
-        const testData = await TestDataSetup.createUserAndLogin();
+        const testData = await UniqueTestDataSetup.createUserAndLogin();
         (await token.makeRequest(undefined, {
             "Authorization": "Bearer " + testData.initialAccessToken
         })).assertForbbidenError();

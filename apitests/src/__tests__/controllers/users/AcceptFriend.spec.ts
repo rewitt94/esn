@@ -1,8 +1,10 @@
 import dotenv from "dotenv";
 import { v4 as uuid } from "uuid";
+import { GetNotifications } from "../../../endpoints/notifications/GetNotifications";
 import { AcceptFriend } from "../../../endpoints/users/AcceptFriend";
-import { FriendshipStatus } from "../../../enums/FriendshipStatus";
-import { TestDataSetup } from "../../../utils/TestDataSetup";
+import { FriendshipStatus } from "../../../models/enums/FriendshipStatus";
+import { NotificationType } from "../../../models/enums/NotificationType";
+import { UniqueTestDataSetup } from "../../../testdata/UniqueTestDataSetup";
 
 describe("Accept Friend", () => {
 
@@ -11,10 +13,11 @@ describe("Accept Friend", () => {
     });
 
     const acceptFriend = new AcceptFriend();
+    const getNotifications = new GetNotifications();
 
     it("Accept friend returns success if authenticated & user has pending invite", async () => {
 
-        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        const testData = await UniqueTestDataSetup.createUserWithPendingFriendRequest();
         (await acceptFriend.makeRequest(
             { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED },
             { "Authorization": "Bearer " + testData.user.fullAccessToken }
@@ -24,7 +27,7 @@ describe("Accept Friend", () => {
 
     it("Cannot accept friend with initial access token", async () => {
 
-        const testData = await TestDataSetup.createUserWithPendingFriendRequest();
+        const testData = await UniqueTestDataSetup.createUserWithPendingFriendRequest();
         (await acceptFriend.makeRequest(
             { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED },
             { "Authorization": "Bearer " + testData.user.initialAccessToken }
@@ -34,7 +37,7 @@ describe("Accept Friend", () => {
 
     it("Cannot accept friend if unauthenticated", async () => {
 
-        const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const otherUserTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, { "Authorization": "Bearer " + "ABC" })).assertUnauthorizedError();
         (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, { "Origin": "ESN" })).assertUnauthorizedError();
         (await acceptFriend.makeRequest({ username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED }, {})).assertUnauthorizedError();
@@ -43,7 +46,7 @@ describe("Accept Friend", () => {
 
     it("Cannot send accept friend request from oneself", async () => {
 
-        const userTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const userTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest(
             { username: userTestData.username, status: FriendshipStatus.ACCEPTED },
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
@@ -53,8 +56,8 @@ describe("Accept Friend", () => {
 
     it("Cannot accept friend request that does not exist", async () => {
 
-        const userTestData = await TestDataSetup.createUserWithFullAccessToken();
-        const otherUserTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const userTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
+        const otherUserTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest(
             { username: otherUserTestData.username, status: FriendshipStatus.ACCEPTED },
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
@@ -64,7 +67,7 @@ describe("Accept Friend", () => {
 
     it("Cannot accept friend request if user does not exist", async () => {
 
-        const userTestData = await TestDataSetup.createUserWithFullAccessToken();
+        const userTestData = await UniqueTestDataSetup.createUserWithFullAccessToken();
         (await acceptFriend.makeRequest(
             { username: uuid(), status: FriendshipStatus.ACCEPTED },
             { "Authorization": "Bearer " + userTestData.fullAccessToken }
@@ -74,7 +77,7 @@ describe("Accept Friend", () => {
 
     it("Cannot accept friend request if users are already friends", async () => {
 
-        const testData = await TestDataSetup.createUsersWhoAreFriends();
+        const testData = await UniqueTestDataSetup.createUsersWhoAreFriends();
         (await acceptFriend.makeRequest(
             { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED },
             { "Authorization": "Bearer " + testData.user.fullAccessToken }
@@ -88,8 +91,8 @@ describe("Accept Friend", () => {
 
     it("Cannot cannot send invalid payload to accept friend", async () => {
 
-        const user = await TestDataSetup.createUserWithFullAccessToken();
-        const otherUser = await TestDataSetup.createUserWithFullAccessToken();
+        const user = await UniqueTestDataSetup.createUserWithFullAccessToken();
+        const otherUser = await UniqueTestDataSetup.createUserWithFullAccessToken();
 
         const invalidAttemps = [
             { username: otherUser.username, status: "pending" },
@@ -108,7 +111,22 @@ describe("Accept Friend", () => {
 
     it("Accept friend triggers expected notifications", async () => {
 
-        await new Promise((_, rej) => rej(new Error('test not written')));
+        const testData = await UniqueTestDataSetup.createUserWithPendingFriendRequest();
+        (await acceptFriend.makeRequest(
+            { username: testData.otherUser.username, status: FriendshipStatus.ACCEPTED },
+            { "Authorization": "Bearer " + testData.user.fullAccessToken }
+        )).assertSuccess();
+        (await getNotifications.makeRequest(
+            undefined, 
+            { "Authorization": "Bearer " + testData.otherUser.fullAccessToken })
+        ).assertSuccess([
+            {
+                notificationType: NotificationType.FRIEND_REQUEST_ACCEPTED,
+                receiverId: testData.otherUser.id,
+                senderId: testData.user.id,
+                subjectId: null
+            }
+        ]);
 
     });
 

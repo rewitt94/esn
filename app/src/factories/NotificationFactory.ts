@@ -42,7 +42,7 @@ export default class NotificationFactory {
         return notification;
     }
 
-    static makeCommunityUpdateNotifications = (member: string, senderId: string, communityId: string): Notification => {
+    static makeCommunityUpdateNotifications = (senderId: string, member: string, communityId: string): Notification => {
         const notification = new Notification();
         notification.id = uuid();
         notification.notificationType = NotificationType.COMMUNITY_EDITTED;

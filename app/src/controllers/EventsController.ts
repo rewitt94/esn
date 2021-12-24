@@ -17,6 +17,7 @@ import CreateCommunityEventRequest from '../requestbody/CreateCommunityEventRequ
 import UpdateEventRequest from '../requestbody/UpdateEventRequest';
 import UpdateAttendanceRequest from '../requestbody/UpdateAttendanceRequest';
 import CreateCommunityEventAttendanceRequest from '../requestbody/CreateCommunityEventAttendanceRequest';
+import Logger from '../utils/Logger';
 
 
 class EventsController implements BaseController {
@@ -45,11 +46,11 @@ class EventsController implements BaseController {
     initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/attendance", [validateFullAccessToken], this.editAttendance);
   }
 
-  getEvents: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  getEvents: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const userId = this.authService.getUserId(request);
     let events: Event[] = [];
     events = events.concat(await this.eventService.getInviteEventsForUser(userId));
-    const communityIds = await this.communitityService.getUsersCommunityIds(userId);
+    const communityIds = await this.communitityService.getUsersCommunityIds(userId, logger);
     for (const communityId of communityIds) {
       events = events.concat(await this.eventService.getEventsForCommunity(communityId));
     }
@@ -88,19 +89,19 @@ class EventsController implements BaseController {
     response.json(attendees);
   }
 
-  createCommunityEvent = async (request: express.Request, response: express.Response) => {
+  createCommunityEvent = async (request: express.Request, response: express.Response, logger: Logger) => {
     const createEventRequest = new CreateCommunityEventRequest(request.body);
     const userId = this.authService.getUserId(request);
     const event = createEventRequest.toNewEvent(userId);
     await ValidationHelper.validateEntity(event);
     await this.authService.validateMembership(userId, event.community)
     await this.eventService.insertEvent(event);
-    await this.notificationService.sendCommunityEventNotficiations(event.community, event.id);
+    await this.notificationService.sendCommunityEventNotficiations(event.community, event.id, logger);
     response.status(201);
     response.json(event);
   }
 
-  createInviteEvent = async (request: express.Request, response: express.Response) => {
+  createInviteEvent = async (request: express.Request, response: express.Response, logger: Logger) => {
     const createEventRequest = new CreateInviteEventRequest(request.body);
     await ValidationHelper.validateRequestBody(createEventRequest);
     const userId = this.authService.getUserId(request);
@@ -110,7 +111,7 @@ class EventsController implements BaseController {
       await this.authService.validateInviteesAreFriends(userId, createEventRequest.invitees);
       await this.eventService.insertEvent(event);
       await this.eventService.inviteUsersToEvent(event.id, createEventRequest.invitees);
-      await this.notificationService.sendEventInviteNotifications(event.id, createEventRequest.invitees, userId)
+      await this.notificationService.sendEventInviteNotifications(event.id, createEventRequest.invitees, userId, logger)
     } else {
       await this.eventService.insertEvent(event);
     }
@@ -118,31 +119,31 @@ class EventsController implements BaseController {
     response.json(event);
   }
 
-  createInvitesToEvent: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  createInvitesToEvent: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const eventInviteRequest = new EventInviteRequest(request.body);
     await ValidationHelper.validateRequestBody(eventInviteRequest);
     const userId = this.authService.getUserId(request);
     await this.authService.validateUserCanInviteToEvent(eventInviteRequest.event, userId);
     await this.authService.validateInviteesAreFriends(userId, eventInviteRequest.invitees);
     await this.eventService.inviteUsersToEvent(eventInviteRequest.event, eventInviteRequest.invitees);
-    await this.notificationService.sendEventInviteNotifications(eventInviteRequest.event, eventInviteRequest.invitees, userId);
+    await this.notificationService.sendEventInviteNotifications(eventInviteRequest.event, eventInviteRequest.invitees, userId, logger);
     response.status(201);
     response.json({ messages: "Event invites sent" });
   }
 
-  editEvent: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  editEvent: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const updateEventRequest = new UpdateEventRequest(request.body);
     await ValidationHelper.validateRequestBody(updateEventRequest);
     const userId = this.authService.getUserId(request);
     await this.authService.validateUserIsEventCreator(updateEventRequest.event, userId);
     const event = updateEventRequest.toEvent();
     await this.eventService.updateEvent(event);
-    await this.notificationService.sendEventUpdateNotifications(event);
+    await this.notificationService.sendEventUpdateNotifications(event, logger);
     response.status(200);
     response.json(event);
   }
 
-  createCommunityEventAttendance: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  createCommunityEventAttendance: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const createCommunityEventAttendanceRequest = new CreateCommunityEventAttendanceRequest(request.body);
     await ValidationHelper.validateRequestBody(createCommunityEventAttendanceRequest);
     const userId = this.authService.getUserId(request);
@@ -154,18 +155,18 @@ class EventsController implements BaseController {
     }
     await this.authService.validateMembership(userId, event.community);
     await this.eventService.createAttendance(attendance);
-    await this.notificationService.sendEventAttendanceNotification(userId, event.creator, event.id);
+    await this.notificationService.sendEventAttendanceNotification(userId, event.creator, event.id, logger);
     response.status(201);
     response.json({ attendance: createCommunityEventAttendanceRequest.AttendanceStatus });
   }
 
-  editAttendance: HTTPHandler = async (request: express.Request, response: express.Response) => {
+  editAttendance: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {
     const updateAttendanceRequest = new UpdateAttendanceRequest(request.body);
     await ValidationHelper.validateRequestBody(updateAttendanceRequest);
     const userId = this.authService.getUserId(request);
     await this.eventService.updateAttendance(userId, updateAttendanceRequest.event, updateAttendanceRequest.AttendanceStatus);
     const event = await this.eventService.getEvent(updateAttendanceRequest.event);
-    await this.notificationService.sendEventAttendanceNotification(userId, event.creator, event.id);
+    await this.notificationService.sendEventAttendanceNotification(userId, event.creator, event.id, logger);
     response.status(200);
     response.json({ attendance: updateAttendanceRequest.AttendanceStatus });
   }

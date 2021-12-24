@@ -6,6 +6,7 @@ import MappingEntityFactory from "../factories/MappingEntityFactory";
 import ValidationHelper from "../utils/ValidationHelper";
 import Community from '../entities/Community';
 import Membership from '../entities/Membership';
+import Logger from "../utils/Logger";
 
 class CommuntiyService {
 
@@ -33,8 +34,14 @@ class CommuntiyService {
         return community;
     }
 
-    getCommunitiesForUser = async (userdId: string): Promise<Community[]> => {
-        return await this.communityRepository.find({ where: { user: userdId } });
+    getCommunitiesForUser = async (userId: string, logger: Logger): Promise<Community[]> => {
+        const communityIds = await this.getUsersCommunityIds(userId, logger);
+        logger.info(`Returning communties that user is accepted into`, { userId, communityIds });
+        const promisedCommunities = communityIds.map(async communityId => {
+            return await this.communityRepository.findOne({ where: { id: communityId } });
+        });
+        const communties = await Promise.all(promisedCommunities).catch( err => { throw err });
+        return communties.filter(this.notEmpty);
     }
 
     saveMemberships = async (memberships: Membership[]): Promise<void> => {
@@ -73,19 +80,21 @@ class CommuntiyService {
 
     getCommunityMemberIds = async (communityId: string): Promise<string[]> => {
         const memberships = await this.membershipRepository.find({ where: { community: communityId } });
-        memberships.filter(membership => membership.MembershipStatus === MembershipStatus.ADMIN || membership.MembershipStatus === MembershipStatus.MEMBER);
+        memberships.filter(membership => membership.membershipStatus === MembershipStatus.ADMIN || membership.membershipStatus === MembershipStatus.MEMBER);
         return memberships.map(membership => membership.user);
     }
 
-    getCommunityAdminIds = async (communityId: string): Promise<string[]> => {
-        const memberships = await this.membershipRepository.find({ where: { community: communityId } });
-        memberships.filter(membership => membership.MembershipStatus === MembershipStatus.ADMIN);
+    getCommunityAdminIds = async (communityId: string, logger: Logger): Promise<string[]> => {
+        logger.info(`Getting admins for community ${communityId}`);
+        let memberships = await this.membershipRepository.find({ where: { community: communityId } });
+        memberships = memberships.filter(membership => membership.membershipStatus === MembershipStatus.ADMIN);
         return memberships.map(membership => membership.user);
     }
 
-    getUsersCommunityIds = async (userId: string): Promise<string[]> => {
-        const memberships = await this.membershipRepository.find({ where: { community: userId } });
-        memberships.filter(membership => membership.MembershipStatus === MembershipStatus.ADMIN || membership.MembershipStatus === MembershipStatus.MEMBER);
+    getUsersCommunityIds = async (userId: string, logger: Logger): Promise<string[]> => {
+        logger.info(`Getting communities for user ${userId}`);
+        const memberships = await this.membershipRepository.find({ where: { user: userId } });
+        memberships.filter(membership => membership.membershipStatus === MembershipStatus.ADMIN || membership.membershipStatus === MembershipStatus.MEMBER);
         return memberships.map(membership => membership.community);
     }
 
@@ -112,15 +121,19 @@ class CommuntiyService {
     acceptMembership = async (userId: string, communityId: string): Promise<void> => {
         const existingMembership = await this.membershipRepository.findOne({ where: { user: userId, community: communityId } });
         if (!!existingMembership) {
-            if (existingMembership.MembershipStatus !== MembershipStatus.INVITED) {
+            if (existingMembership.membershipStatus !== MembershipStatus.INVITED) {
                 throw new HTTPError(ConflictStatus, 'acceptMembership - cannot accept community invite membership is not in INVITED status', { existingMembership });
             }
-            existingMembership.MembershipStatus = MembershipStatus.MEMBER;
+            existingMembership.membershipStatus = MembershipStatus.MEMBER;
             await this.membershipRepository.update(existingMembership.id, existingMembership);
             return;
         }
         throw new HTTPError(ForbiddenStatus, 'acceptMembership - membership not found by communityId and userId', { userId, communityId });
     }
+
+    notEmpty<TValue>(value: TValue | null | undefined): value is TValue {
+        return value !== null && value !== undefined;
+    };
 
 }
 

@@ -1,9 +1,14 @@
 import { IsNotEmpty, IsUUID, IsISO8601, IsEnum, IsOptional } from "class-validator";
 import { NotificationType } from "../enums/NotificationType";
 import { Entity, PrimaryColumn, Column } from "typeorm";
+import moment from "moment";
 
 @Entity()
 export default class Notification {
+
+    constructor() {
+        this.dateCreated = moment().utc().toISOString();
+    }
 
     @IsNotEmpty()
     @IsUUID("4")
@@ -32,7 +37,7 @@ export default class Notification {
 
     @IsOptional()
     @IsUUID()
-    @Column()
+    @Column({ nullable: true })
     subjectId: string;
 
 }

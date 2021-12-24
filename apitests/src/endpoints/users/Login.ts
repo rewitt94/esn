@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
-import { HTTPEndpoint, HTTPApiMethodResponse } from "../../utils/HTTPAssertions";
+import { HTTPEndpoint, HTTPApiMethodResponse } from "../HTTPAssertions";
 import jwt from "jsonwebtoken";
-import { JWTClaims } from '../../types/JWTClaims';
-import { AccessTokenStatus } from '../../enums/AccessTokenStatus';
+import { JWTClaims } from '../../models/types/JWTClaims';
+import { AccessTokenStatus } from '../../models/enums/AccessTokenStatus';
 
 interface LoginPayload {
     username: string,
