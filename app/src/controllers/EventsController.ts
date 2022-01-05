@@ -38,8 +38,8 @@ class EventsController implements BaseController {
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/", [validateFullAccessToken], this.getEvents);
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:eventId", [validateFullAccessToken], this.getEvent);
     initialiseRoute(this.router, HTTPMethods.GET, this.path, "/:eventId/attendance", [validateFullAccessToken], this.getEventAttendance);
-    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/invite-event", [validateFullAccessToken], this.createInviteEvent);
-    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/community-event", [validateFullAccessToken], this.createCommunityEvent);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/inviteEvent", [validateFullAccessToken], this.createInviteEvent);
+    initialiseRoute(this.router, HTTPMethods.POST, this.path, "/communityEvent", [validateFullAccessToken], this.createCommunityEvent);
     initialiseRoute(this.router, HTTPMethods.POST, this.path, "/invite", [validateFullAccessToken], this.createInvitesToEvent);
     initialiseRoute(this.router, HTTPMethods.POST, this.path, "/attendance", [validateFullAccessToken], this.createCommunityEventAttendance);
     initialiseRoute(this.router, HTTPMethods.PUT, this.path, "/", [validateFullAccessToken], this.editEvent);
@@ -91,6 +91,7 @@ class EventsController implements BaseController {
 
   createCommunityEvent = async (request: express.Request, response: express.Response, logger: Logger) => {
     const createEventRequest = new CreateCommunityEventRequest(request.body);
+    await ValidationHelper.validateRequestBody(createEventRequest);
     const userId = this.authService.getUserId(request);
     const event = createEventRequest.toNewEvent(userId);
     await ValidationHelper.validateEntity(event);

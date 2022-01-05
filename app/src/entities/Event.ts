@@ -26,7 +26,7 @@ export default class Event {
 
     @IsOptional()
     @IsUUID("4")
-    @Column()
+    @Column({ nullable: true })
     community: string;
 
     @IsNotEmpty()

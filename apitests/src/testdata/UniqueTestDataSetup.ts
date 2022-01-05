@@ -12,6 +12,8 @@ import { CommunityType } from "../models/enums/CommunityType";
 import { EditCommunity } from "../endpoints/communities/EditCommunity";
 import { SendMembership } from "../endpoints/communities/SendMembership";
 import { AcceptMembership } from "../endpoints/communities/AcceptMembership";
+import { DateTime } from "luxon";
+import { CreateInviteEvent } from "../endpoints/events/CreateInviteEvent";
 
 const createUser = new CreateUser();
 const login = new Login();
@@ -23,6 +25,7 @@ const createCommunity = new CreateCommunity();
 const editCommunity = new EditCommunity();
 const sendMembership = new SendMembership();
 const acceptMembership = new AcceptMembership();
+const createInviteEvent = new CreateInviteEvent();
 
 export class UniqueTestDataSetup {
 
@@ -280,6 +283,24 @@ export class UniqueTestDataSetup {
         const testData = await this.createCommunityAndWithAdminAndMember();
         const nonConnectedUser = await this.createUserWithFullAccessToken();
         return Object.assign(testData, { nonConnectedUser });
+    }
+
+    static async createUserAndEventWithoutInvitees() {
+        const user = await UniqueTestDataSetup.createUserWithFullAccessToken();
+        const createEventPayload = {
+            name: faker.address.city() + " Gathering",
+            description: faker.company.bsAdjective(),
+            startTime: DateTime.now().plus({ weeks: 1 }).endOf("day").minus({ hours: 5 }).toISO(),
+            endTime: DateTime.now().plus({ weeks: 1 }).endOf("day").minus({ hours: 1 }).toISO(),
+        };
+        const createInviteEventResponse = await createInviteEvent.makeRequest(createEventPayload,  {
+            "Authorization": "Bearer " + user.fullAccessToken
+        });
+        const event = createInviteEventResponse.assertSuccess();
+        return {
+            user,
+            event
+        }
     }
 
 }
