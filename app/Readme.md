@@ -3,14 +3,25 @@ MVP plan: https://docs.google.com/spreadsheets/d/1gpZsIii90Fg5nfw3qW2eitaq8lhnZV
 
 # Run instructions
 
-1. terminal window 1 - 
+- docker-compose up -d
+- npm run start
 
-docker-compose up (make sure the container has been deleting if you changing the database)
+## Tech Debt
 
-2. terminal window 2 -
+- Replace moment with luxon
+- ESLINT for BE app
+-  FetchError: invalid json response body at http://localhost:3000/eventsa/inviteEventaaa reason: Unexpected token < in JSON at position 0
 
-npm run start
+## MVP Features
 
-### Known issues
+- Addresses for events
+- Posts for communities and events
+- Replace username with (???)
+- Add email or mobile (verified) and reset password journey
 
-1. Potential chance to overwrite mapping entities (save)
+## Features
+
+- Scan QR code to add friends
+- Profile pictures
+- Suggested event times & condition attendance / polls
+- Desk booking system for offices
