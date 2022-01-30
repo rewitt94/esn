@@ -285,8 +285,11 @@ export class UniqueTestDataSetup {
         return Object.assign(testData, { nonConnectedUser });
     }
 
-    static async createUserAndEventWithoutInvitees() {
+    static async createUserWithFriendAndEventWithoutInvitees() {
         const user = await UniqueTestDataSetup.createUserWithFullAccessToken();
+        const friend = await UniqueTestDataSetup.createUserWithFullAccessToken();
+        (await addFriend.makeRequest({ username: friend.username }, { "Authorization": "Bearer " + user.fullAccessToken })).assertSuccess();
+        (await acceptFriend.makeRequest({ username: user.username, status: FriendshipStatus.ACCEPTED }, { "Authorization": "Bearer " + friend.fullAccessToken })).assertSuccess();
         const createEventPayload = {
             name: faker.address.city() + " Gathering",
             description: faker.company.bsAdjective(),
@@ -299,6 +302,7 @@ export class UniqueTestDataSetup {
         const event = createInviteEventResponse.assertSuccess();
         return {
             user,
+            friend,
             event
         }
     }

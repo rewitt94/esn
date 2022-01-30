@@ -129,7 +129,7 @@ class EventsController implements BaseController {
     await this.eventService.inviteUsersToEvent(eventInviteRequest.event, eventInviteRequest.invitees);
     await this.notificationService.sendEventInviteNotifications(eventInviteRequest.event, eventInviteRequest.invitees, userId, logger);
     response.status(201);
-    response.json({ messages: "Event invites sent" });
+    response.json({ message: "Event invites sent" });
   }
 
   editEvent: HTTPHandler = async (request: express.Request, response: express.Response, logger: Logger) => {

@@ -27,6 +27,7 @@ export class SendEventInvites extends HTTPEndpoint<SendEventInvitesRequest, Send
     }
 
     assertSuccess = (statusCode: number, responseBody: SendEventInvitesResponse): void => {
+        console.log(responseBody)
         expect(statusCode).toEqual(201);
         expect(responseBody.message).toEqual("Event invites sent")
     }
